@@ -113,6 +113,7 @@ jobs:
         run: >
           curl -SL https://root.cern/download/root_v${ROOT_VERSION}.macos-11.6-x86_64-clang120.tar.gz | tar -xzC .
           && tar czf root_.tar.gz -C root .
+          && ls -al
 
 
       - uses: actions/upload-artifact@v1

@@ -227,7 +227,7 @@ jobs:
       - name: Build
         run: >
           curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
-          && mv pythia8244 pythia8_src
+          && mv pythia8* pythia8_src
           && cd pythia8_src
           && ./configure --prefix=${INSTALL_DIR}
           && make -j2

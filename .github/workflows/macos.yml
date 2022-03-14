@@ -39,7 +39,7 @@ jobs:
       - name: Download
         run: >
           curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/oneapi-tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
-          && tar czf tbb.tar.gz -C tbb .
+          && tar czf tbb.tar.gz -C oneapi-tbb-* .
       - uses: actions/upload-artifact@v1
         with:
           name: tbb
@@ -112,7 +112,7 @@ jobs:
       - name: Download
         run: >
           curl -SL https://root.cern/download/root_v${ROOT_VERSION}.macos-11.6-x86_64-clang120.tar.gz | tar -xzC .
-          && tar czf root_.tar.gz -C root .
+          && tar czf root.tar.gz -C root .
           && ls -al
 
 

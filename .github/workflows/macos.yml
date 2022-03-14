@@ -15,8 +15,8 @@ env:
   PYTHIA8_VERSION: 307
 
 jobs:
-  build_boost:
-    runs-on: macos-11
+  # build_boost:
+    # runs-on: macos-11
 
     # steps:
       # - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}

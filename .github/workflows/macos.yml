@@ -38,7 +38,7 @@ jobs:
     steps:
       - name: Download
         run: >
-          curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
+          curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/oneapi-tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
           && rm tbb/README
           && tar czf tbb.tar.gz -C tbb .
       - uses: actions/upload-artifact@v1

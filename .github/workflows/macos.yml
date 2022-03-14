@@ -164,7 +164,6 @@ jobs:
           curl -SL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
           && mv DD4hep-* dd4hep_src
           && pushd dd4hep_src
-          && cat ../dd4hep_1_11_2_tbb_fix.patch | patch -p1
           && popd
           && mkdir dd4hep_build && cd dd4hep_build
           && cmake ../dd4hep_src

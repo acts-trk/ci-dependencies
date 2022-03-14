@@ -226,7 +226,7 @@ jobs:
       - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
       - name: Build
         run: >
-          curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz 
+          curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
           && mv pythia8244 pythia8_src
           && cd pythia8_src
           && ./configure --prefix=${INSTALL_DIR}

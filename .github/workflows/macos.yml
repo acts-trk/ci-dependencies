@@ -15,23 +15,23 @@ env:
   PYTHIA8_VERSION: 307
 
 jobs:
-  # build_boost:
-    # runs-on: macos-11
+  build_boost:
+    runs-on: macos-11
 
-    # steps:
-      # - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-      # - name: Build
-        # run: >
-          # curl -SL https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz | tar -xzC .
-          # && mv boost_* boost_src && cd boost_src
-          # && ./bootstrap.sh 
-          # --prefix=${INSTALL_DIR}
-          # && ./b2 install
-          # && tar czf ../boost.tar.gz -C ${INSTALL_DIR} .
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: boost
-          # path: boost.tar.gz
+    steps:
+      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - name: Build
+        run: >
+          curl -SL https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz | tar -xzC .
+          && mv boost_* boost_src && cd boost_src
+          && ./bootstrap.sh 
+          --prefix=${INSTALL_DIR}
+          && ./b2 install
+          && tar czf ../boost.tar.gz -C ${INSTALL_DIR} .
+      - uses: actions/upload-artifact@v1
+        with:
+          name: boost
+          path: boost.tar.gz
 
   build_tbb:
     runs-on: ubuntu-latest # we don't actually need macOS here
@@ -46,68 +46,33 @@ jobs:
           path: tbb.tar.gz
 
 
-  # build_xercesc:
-    # runs-on: macos-11
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake
+  build_xercesc:
+    runs-on: macos-11
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
 
-      # - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
 
-      # - name: Build
-        # run: >
-          # curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
-          # && mv xerces-c-* xerces-c_src
-          # && mkdir xerces-c_build && cd xerces-c_build
-          # && cmake ../xerces-c_src
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # && make -j2
-          # && make install 
-          # && tar czf ../xercesc.tar.gz -C ${INSTALL_DIR} .
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: xercesc
-          # path: xercesc.tar.gz
+      - name: Build
+        run: >
+          curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
+          && mv xerces-c-* xerces-c_src
+          && mkdir xerces-c_build && cd xerces-c_build
+          && cmake ../xerces-c_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          && make -j2
+          && make install 
+          && tar czf ../xercesc.tar.gz -C ${INSTALL_DIR} .
+      - uses: actions/upload-artifact@v1
+        with:
+          name: xercesc
+          path: xercesc.tar.gz
 
   build_root:
-    runs-on: ubuntu-latest
-    # needs:
-      # - build_tbb
+    runs-on: ubuntu-latest # we don't need macOS here
     steps:
-      # - name: Install dependencies
-        # run: brew install cmake
-
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: tbb
-          # path: .
-
-      # - run: >
-          # sudo mkdir ${INSTALL_DIR} && sudo chown -R $USER ${INSTALL_DIR}
-          # && tar xf tbb.tar.gz -C $INSTALL_DIR
-
-      # - name: Build
-        # run: >
-          # curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
-          # && mv root-* root_src 
-          # && mkdir root_build && cd root_build 
-          # && cmake ../root_src 
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_CXX_STANDARD=17 
-          # -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -Dx11=ON 
-          # -Dfftw3=ON 
-          # -Dgdml=ON 
-          # -Dminuit2=ON 
-          # -Dopengl=ON 
-          # -Droofit=ON 
-          # -Dxml=ON 
-          # && make -j2
-          # && make install 
-          # && tar czf ../root.tar.gz -C ${INSTALL_DIR} .
-          #
 
       - name: Download
         run: >
@@ -121,252 +86,252 @@ jobs:
           name: root
           path: root.tar.gz
 
-  # build_geant4:
-    # runs-on: macos-11
-    # needs:
-      # - build_xercesc
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake
+  build_geant4:
+    runs-on: macos-11
+    needs:
+      - build_xercesc
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
 
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: xercesc
-          # path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: xercesc
+          path: .
 
-      # - run: >
-          # sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          # && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
+      - run: >
+          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
                         
-      # - name: Build Geant4
-        # run: >
-          # curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
-          # && mv geant4-* geant4_src
-          # && mkdir geant4_build && cd geant4_build
-          # && cmake ../geant4_src
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DGEANT4_USE_GDML=ON
-          # -DGEANT4_BUILD_CXXSTD=17
-          # -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # && make -j2
-          # && make install
-          # && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
+      - name: Build Geant4
+        run: >
+          curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
+          && mv geant4-* geant4_src
+          && mkdir geant4_build && cd geant4_build
+          && cmake ../geant4_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DGEANT4_USE_GDML=ON
+          -DGEANT4_BUILD_CXXSTD=17
+          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          && make -j2
+          && make install
+          && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
 
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: geant4
-          # path: geant4.tar.gz
+      - uses: actions/upload-artifact@v1
+        with:
+          name: geant4
+          path: geant4.tar.gz
 
-  # build_dd4hep:
-    # runs-on: macos-11
-    # needs:
-      # - build_geant4
-      # - build_root
-      # - build_xercesc
-    # steps:
-      # - uses: actions/checkout@v2
+  build_dd4hep:
+    runs-on: macos-11
+    needs:
+      - build_geant4
+      - build_root
+      - build_xercesc
+    steps:
+      - uses: actions/checkout@v2
 
-      # - name: Install dependencies
-        # run: brew install cmake
+      - name: Install dependencies
+        run: brew install cmake
 
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: xercesc
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: root
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: geant4
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: boost
-          # path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: xercesc
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: root
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: geant4
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: boost
+          path: .
 
-      # - run: >
-          # sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          # && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
-          # && tar xf root.tar.gz -C ${INSTALL_DIR}
-          # && tar xf geant4.tar.gz -C ${INSTALL_DIR}
-          # && tar xf boost.tar.gz -C ${INSTALL_DIR}
+      - run: >
+          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
+          && tar xf root.tar.gz -C ${INSTALL_DIR}
+          && tar xf geant4.tar.gz -C ${INSTALL_DIR}
+          && tar xf boost.tar.gz -C ${INSTALL_DIR}
 
-      # - name: Build DD4hep
-        # run: >
-          # curl -SL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
-          # && mv DD4hep-* dd4hep_src
-          # && pushd dd4hep_src
-          # && cat ../dd4hep_1_11_2_tbb_fix.patch | patch -p1
-          # && popd
-          # && mkdir dd4hep_build && cd dd4hep_build
-          # && cmake ../dd4hep_src
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DDD4HEP_USE_GEANT4=ON
-          # -DCMAKE_CXX_STANDARD=17
-          # -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DBUILD_DOCS=OFF
-          # && make -j2
-          # && make install
-          # && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
+      - name: Build DD4hep
+        run: >
+          curl -SL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
+          && mv DD4hep-* dd4hep_src
+          && pushd dd4hep_src
+          && cat ../dd4hep_1_11_2_tbb_fix.patch | patch -p1
+          && popd
+          && mkdir dd4hep_build && cd dd4hep_build
+          && cmake ../dd4hep_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DDD4HEP_USE_GEANT4=ON
+          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          -DBUILD_DOCS=OFF
+          && make -j2
+          && make install
+          && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
 
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: dd4hep
-          # path: dd4hep.tar.gz
+      - uses: actions/upload-artifact@v1
+        with:
+          name: dd4hep
+          path: dd4hep.tar.gz
 
-  # build_hepmc3:
-    # runs-on: macos-11
-    # needs:
-      # - build_root
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake
+  build_hepmc3:
+    runs-on: macos-11
+    needs:
+      - build_root
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
 
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: root
-          # path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: root
+          path: .
 
-      # - run: >
-          # sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          # && tar xf root.tar.gz -C ${INSTALL_DIR}
+      - run: >
+          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+          && tar xf root.tar.gz -C ${INSTALL_DIR}
 
-      # - name: Build
-        # run: >
-          # curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
-          # && mv HepMC* hepmc_src
-          # && mkdir hepmc_build && cd hepmc_build
-          # && cmake ../hepmc_src
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DHEPMC3_ENABLE_PYTHON=OFF
-          # && make -j2
-          # && make install
-          # && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
+      - name: Build
+        run: >
+          curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
+          && mv HepMC* hepmc_src
+          && mkdir hepmc_build && cd hepmc_build
+          && cmake ../hepmc_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          -DHEPMC3_ENABLE_PYTHON=OFF
+          && make -j2
+          && make install
+          && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
 
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: hepmc3
-          # path: hepmc3.tar.gz
-
-
-  # build_pythia8:
-    # runs-on: macos-11
-    # steps:
-      # - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-      # - name: Build
-        # run: >
-          # curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz 
-          # && mv pythia8244 pythia8_src
-          # && cd pythia8_src
-          # && ./configure --prefix=${INSTALL_DIR}
-          # && make -j2
-          # && make install
-          # && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
-
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: pythia8
-          # path: pythia8.tar.gz
+      - uses: actions/upload-artifact@v1
+        with:
+          name: hepmc3
+          path: hepmc3.tar.gz
 
 
-  # make_tarball:
-    # runs-on: ubuntu-latest # we don't need macOS here
-    # needs: 
-      # - build_boost
-      # - build_tbb
-      # - build_xercesc
-      # - build_pythia8
-      # - build_root
-      # - build_geant4
-      # - build_hepmc3
-      # - build_dd4hep
-    # steps:
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: boost
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: tbb
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: xercesc
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: pythia8
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: root
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: geant4
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: hepmc3
-          # path: .
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: dd4hep
-          # path: .
+  build_pythia8:
+    runs-on: macos-11
+    steps:
+      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - name: Build
+        run: >
+          curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz 
+          && mv pythia8244 pythia8_src
+          && cd pythia8_src
+          && ./configure --prefix=${INSTALL_DIR}
+          && make -j2
+          && make install
+          && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
 
-      # - name: Unpack
-        # run: >
-          # sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          # && tar xf tbb.tar.gz -C ${INSTALL_DIR}
-          # && tar xf boost.tar.gz -C ${INSTALL_DIR}
-          # && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
-          # && tar xf pythia8.tar.gz -C ${INSTALL_DIR}
-          # && tar xf root.tar.gz -C ${INSTALL_DIR}
-          # && tar xf geant4.tar.gz -C ${INSTALL_DIR}
-          # && tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
-          # && tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
+      - uses: actions/upload-artifact@v1
+        with:
+          name: pythia8
+          path: pythia8.tar.gz
 
-      # - name: Make combined tarball
-        # run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .
 
-      # - uses: actions/upload-artifact@v1
-        # with:
-          # name: deps
-          # path: deps.tar.gz
+  make_tarball:
+    runs-on: ubuntu-latest # we don't need macOS here
+    needs: 
+      - build_boost
+      - build_tbb
+      - build_xercesc
+      - build_pythia8
+      - build_root
+      - build_geant4
+      - build_hepmc3
+      - build_dd4hep
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: boost
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: tbb
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: xercesc
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: pythia8
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: root
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: geant4
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: hepmc3
+          path: .
+      - uses: actions/download-artifact@v1
+        with:
+          name: dd4hep
+          path: .
 
-  # deploy_to_eos:
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    # runs-on: ubuntu-latest # we don't need macOS here
-    # needs:
-      # - make_tarball
-    # env: 
-      # DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      # DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
-    # steps:
+      - name: Unpack
+        run: >
+          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+          && tar xf tbb.tar.gz -C ${INSTALL_DIR}
+          && tar xf boost.tar.gz -C ${INSTALL_DIR}
+          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
+          && tar xf pythia8.tar.gz -C ${INSTALL_DIR}
+          && tar xf root.tar.gz -C ${INSTALL_DIR}
+          && tar xf geant4.tar.gz -C ${INSTALL_DIR}
+          && tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
+          && tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
 
-      # - uses: actions/checkout@v2
+      - name: Make combined tarball
+        run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .
 
-      # - name: Install prerequisites
-        # run: >
-          # sudo apt-get install -y krb5-user krb5-config
+      - uses: actions/upload-artifact@v1
+        with:
+          name: deps
+          path: deps.tar.gz
 
-      # - uses: actions/download-artifact@v1
-        # with:
-          # name: deps
-          # path: .
+  deploy_to_eos:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest # we don't need macOS here
+    needs:
+      - make_tarball
+    env: 
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
+    steps:
 
-      # - name: Upload
-        # run: >
-          # echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
-          # && sha=$(echo $GITHUB_SHA | head -c 7)
-          # && name=deps.$sha.tar.gz
-          # && mv deps.tar.gz $name
-          # && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/
-          # && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/deps.latest.tar.gz
+      - uses: actions/checkout@v2
+
+      - name: Install prerequisites
+        run: >
+          sudo apt-get install -y krb5-user krb5-config
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: deps
+          path: .
+
+      - name: Upload
+        run: >
+          echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
+          && sha=$(echo $GITHUB_SHA | head -c 7)
+          && name=deps.$sha.tar.gz
+          && mv deps.tar.gz $name
+          && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/
+          && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/deps.latest.tar.gz
 

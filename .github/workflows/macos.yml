@@ -161,7 +161,7 @@ jobs:
 
       - name: Build DD4hep
         run: >
-          git clone https://github.com/paulgessinger/DD4hep.git dd4hep_src -b pyver-relax
+          git clone https://github.com/AIDASoft/DD4hep.git dd4hep_src
           && pushd dd4hep_src
           && popd
           && mkdir dd4hep_build && cd dd4hep_build

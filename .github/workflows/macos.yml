@@ -28,7 +28,7 @@ jobs:
           --prefix=${INSTALL_DIR}
           && ./b2 install
           && tar czf ../boost.tar.gz -C ${INSTALL_DIR} .
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: boost
           path: boost.tar.gz
@@ -40,7 +40,7 @@ jobs:
         run: >
           curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/oneapi-tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
           && tar czf tbb.tar.gz -C oneapi-tbb-* .
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: tbb
           path: tbb.tar.gz
@@ -65,7 +65,7 @@ jobs:
           && make -j2
           && make install 
           && tar czf ../xercesc.tar.gz -C ${INSTALL_DIR} .
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: xercesc
           path: xercesc.tar.gz
@@ -78,7 +78,7 @@ jobs:
       - name: Install dependencies
         run: brew install cmake
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: tbb
           path: .
@@ -108,7 +108,7 @@ jobs:
           && make install 
           && tar czf ../root.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: root
           path: root.tar.gz
@@ -121,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: brew install cmake
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: xercesc
           path: .
@@ -145,7 +145,7 @@ jobs:
           && make install
           && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: geant4
           path: geant4.tar.gz
@@ -162,19 +162,19 @@ jobs:
       - name: Install dependencies
         run: brew install cmake
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: xercesc
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: root
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: geant4
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: boost
           path: .
@@ -205,7 +205,7 @@ jobs:
           && make install
           && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: dd4hep
           path: dd4hep.tar.gz
@@ -218,7 +218,7 @@ jobs:
       - name: Install dependencies
         run: brew install cmake
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: root
           path: .
@@ -241,7 +241,7 @@ jobs:
           && make install
           && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: hepmc3
           path: hepmc3.tar.gz
@@ -261,7 +261,7 @@ jobs:
           && make install
           && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: pythia8
           path: pythia8.tar.gz
@@ -279,35 +279,35 @@ jobs:
       - build_hepmc3
       - build_dd4hep
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: boost
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: tbb
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: xercesc
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: pythia8
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: root
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: geant4
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: hepmc3
           path: .
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: dd4hep
           path: .
@@ -327,7 +327,7 @@ jobs:
       - name: Make combined tarball
         run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v3
         with:
           name: deps
           path: deps.tar.gz
@@ -348,7 +348,7 @@ jobs:
         run: >
           sudo apt-get install -y krb5-user krb5-config
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: deps
           path: .

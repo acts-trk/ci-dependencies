@@ -313,16 +313,15 @@ jobs:
           path: .
 
       - name: Unpack
-        run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          && tar xf tbb.tar.gz -C ${INSTALL_DIR}
-          && tar xf boost.tar.gz -C ${INSTALL_DIR}
-          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
-          && tar xf pythia8.tar.gz -C ${INSTALL_DIR}
-          && tar xf root.tar.gz -C ${INSTALL_DIR}
-          && tar xf geant4.tar.gz -C ${INSTALL_DIR}
-          && tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
-          && tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
+        run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - run: tar xf tbb.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf boost.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf xercesc.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf pythia8.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf root.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf geant4.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
 
       - name: Make combined tarball
         run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .

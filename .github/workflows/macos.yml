@@ -285,29 +285,33 @@ jobs:
           sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
           && tar xf root.tar.gz -C ${INSTALL_DIR}
 
-      - name: Build
+      - name: Build podio
         run: >
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
           && mv podio-* podio_src
           && cmake -B podio_build -S podio_src
-            -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
             -DCMAKE_BUILD_TYPE=Release
-            -DCMAKE_INSTALL_PREFIX=${PREFIX}
+            -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
             -DBUILD_TESTING=OFF
             -USE_EXTERNAL_CATCH2=OFF
           && cmake --build podio_build -- install
 
+      - name: Build edm4hep
+        run: >
           curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
           && mv EDM4hep-* edm4hep_src
           && cmake -B edm4hep_build -S edm4hep_src
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-            -DCMAKE_INSTALL_PREFIX=${PREFIX}
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
             -DBUILD_TESTING=OFF
             -USE_EXTERNAL_CATCH2=OFF
           && cmake --build edm4hep_build -- install
 
-          && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
+      - name: Package output
+        run: >
+          tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
 
       - uses: actions/upload-artifact@v3
         with:

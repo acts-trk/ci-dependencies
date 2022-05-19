@@ -13,6 +13,8 @@ env:
   TBB_VERSION: 2021.5.0
   HEPMC_VERSION: 3.2.1
   PYTHIA8_VERSION: 307
+  PODIO_VERSION: v00-14-01
+  EDM4HEP_VERSION: v00-04-01
 
 jobs:
   build_boost:
@@ -266,6 +268,38 @@ jobs:
           name: pythia8
           path: pythia8.tar.gz
 
+  build_edm4hep:
+    runs-on: macos-11
+    steps:
+      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - name: Build
+        run: >
+          curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
+          && mv podio-* podio_src
+          && cmake -B podio_build -S podio_src -GNinja
+            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_INSTALL_PREFIX=${PREFIX}
+            -DBUILD_TESTING=OFF
+            -USE_EXTERNAL_CATCH2=OFF
+          && cmake --build podio_build -- install
+
+          curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
+          && mv EDM4hep-* edm4hep_src
+          && cmake -B edm4hep_build -S edm4hep_src -GNinja
+            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_INSTALL_PREFIX=${PREFIX}
+            -DBUILD_TESTING=OFF
+            -USE_EXTERNAL_CATCH2=OFF
+          && cmake --build edm4hep_build -- install
+
+          && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: edm4hep
+          path: edm4hep.tar.gz
+
+
 
   make_tarball:
     runs-on: ubuntu-latest # we don't need macOS here
@@ -278,6 +312,7 @@ jobs:
       - build_geant4
       - build_hepmc3
       - build_dd4hep
+      - build_edm4hep
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -311,6 +346,10 @@ jobs:
         with:
           name: dd4hep
           path: .
+      - uses: actions/download-artifact@v3
+        with:
+          name: edm4hep
+          path: .
 
       - name: Unpack
         run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
@@ -322,6 +361,7 @@ jobs:
       - run: tar xf geant4.tar.gz -C ${INSTALL_DIR}
       - run: tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
       - run: tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf edm4hep.tar.gz -C ${INSTALL_DIR}
 
       - name: Make combined tarball
         run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .

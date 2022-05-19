@@ -290,6 +290,7 @@ jobs:
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
           && mv podio-* podio_src
           && cmake -B podio_build -S podio_src
+            -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_INSTALL_PREFIX=${PREFIX}
             -DBUILD_TESTING=OFF
@@ -300,6 +301,7 @@ jobs:
           && mv EDM4hep-* edm4hep_src
           && cmake -B edm4hep_build -S edm4hep_src
             -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
             -DCMAKE_INSTALL_PREFIX=${PREFIX}
             -DBUILD_TESTING=OFF
             -USE_EXTERNAL_CATCH2=OFF

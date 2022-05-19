@@ -270,8 +270,21 @@ jobs:
 
   build_edm4hep:
     runs-on: macos-11
+    needs:
+      - build_root
     steps:
-      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+      - name: Install dependencies
+        run: brew install cmake
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: root
+          path: .
+
+      - run: >
+          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
+          && tar xf root.tar.gz -C ${INSTALL_DIR}
+
       - name: Build
         run: >
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .

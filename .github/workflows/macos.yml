@@ -200,9 +200,11 @@ jobs:
   build_dd4hep:
     runs-on: macos-11
     needs:
-      - build_geant4
-      - build_root
+      - build_boost
+      - build_tbb
       - build_xercesc
+      - build_root
+      - build_geant4
     steps:
       - name: Install dependencies
         run: brew install cmake ccache
@@ -218,7 +220,15 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
+          name: boost
+          path: .
+      - uses: actions/download-artifact@v3
+        with:
           name: xercesc
+          path: .
+      - uses: actions/download-artifact@v3
+        with:
+          name: tbb
           path: .
       - uses: actions/download-artifact@v3
         with:
@@ -228,16 +238,13 @@ jobs:
         with:
           name: geant4
           path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: boost
-          path: .
 
       - run: mkdir -p ${DEPENDENCY_DIR}
+      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build DD4hep
         run: >

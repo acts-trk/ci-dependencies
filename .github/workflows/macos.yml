@@ -392,6 +392,7 @@ jobs:
     runs-on: macos-11
     needs:
       - build_root
+      - build_podio
     steps:
       - name: Install dependencies
         run: brew install cmake ccache

@@ -370,9 +370,9 @@ jobs:
         run: >
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
           && mkdir -p ${SRC_DIR}
-          && mv podio-* ${SRC_DIR}/podio
-          && mkdir -p ${BUILD_DIR}/podio && cd ${BUILD_DIR}/podio
-          && cmake ${SRC_DIR}/podio
+          && mv podio-* ${SRC_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+          && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
@@ -425,9 +425,9 @@ jobs:
         run: >
           curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
           && mkdir -p ${SRC_DIR}
-          && mv EDM4hep-* ${SRC_DIR}/edm4hep
-          && mkdir -p ${BUILD_DIR}/edm4hep && cd ${BUILD_DIR}/edm4hep
-          && cmake ${SRC_DIR}/edm4hep
+          && mv EDM4hep-* ${SRC_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR
+          && cmake ${SRC_DIR
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}

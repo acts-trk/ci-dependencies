@@ -419,6 +419,7 @@ jobs:
 
       - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build edm4hep
         run: >

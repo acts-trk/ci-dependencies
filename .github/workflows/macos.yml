@@ -369,7 +369,6 @@ jobs:
       - name: Build podio
         run: >
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
-          && mkdir -p ${SRC_DIR}
           && mv podio-* ${SRC_DIR}
           && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
@@ -424,10 +423,9 @@ jobs:
       - name: Build edm4hep
         run: >
           curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
-          && mkdir -p ${SRC_DIR}
           && mv EDM4hep-* ${SRC_DIR}
-          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR
-          && cmake ${SRC_DIR
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+          && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}

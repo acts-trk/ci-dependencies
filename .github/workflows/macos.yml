@@ -379,9 +379,9 @@ jobs:
       - name: Build podio
         run: >
           curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
-          && mv podio-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
+          && mv podio-* ${SRC_DIR}/podio
+          && mkdir ${BUILD_DIR}/podio && cd ${BUILD_DIR}/podio
+          && cmake ${SRC_DIR}/podio
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
@@ -390,14 +390,13 @@ jobs:
           -USE_EXTERNAL_CATCH2=OFF
           && make -j2
           && make install
-          && rm -rf ${BUILD_DIR}
 
       - name: Build edm4hep
         run: >
           curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
-          && mv EDM4hep-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
+          && mv EDM4hep-* ${SRC_DIR}/edm4hep
+          && mkdir ${BUILD_DIR}/edm4hep && cd ${BUILD_DIR}/edm4hep
+          && cmake ${SRC_DIR}/edm4hep
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_PREFIX_PATH=${INSTALL_DIR}

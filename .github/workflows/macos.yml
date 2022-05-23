@@ -5,7 +5,8 @@ on: [push, pull_request]
 env:
   SRC_DIR: ${{ github.workspace }}/src
   BUILD_DIR: ${{ github.workspace }}/build
-  INSTALL_DIR: /usr/local/acts
+  DEPENDENCY_DIR: ${{ github.workspace }}/dependency
+  INSTALL_DIR: ${{ github.workspace }}/install
 
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
@@ -36,8 +37,6 @@ jobs:
           restore-keys: |
             builddir-${{ runner.os }}-${{ github.job }}-${{ env.BOOST_VERSION }}
             builddir-${{ runner.os }}-${{ github.job }}-
-
-      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
 
       - name: Build
         run: >
@@ -82,8 +81,6 @@ jobs:
             ccache-${{ runner.os }}-${{ github.job }}-${{ env.XERCESC_VERSION }}
             ccache-${{ runner.os }}-${{ github.job }}-
 
-      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-
       - name: Build
         run: >
           curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
@@ -124,9 +121,7 @@ jobs:
           name: tbb
           path: .
 
-      - run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown -R $USER ${INSTALL_DIR}
-          && tar xf tbb.tar.gz -C $INSTALL_DIR
+      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
         run: >
@@ -137,7 +132,7 @@ jobs:
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_STANDARD=17 
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           -Dx11=ON 
           -Dfftw3=ON 
@@ -177,9 +172,7 @@ jobs:
           name: xercesc
           path: .
 
-      - run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build Geant4
         run: >
@@ -191,7 +184,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DGEANT4_USE_GDML=ON
           -DGEANT4_BUILD_CXXSTD=17
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           && make -j2
           && make install
@@ -238,12 +231,10 @@ jobs:
           name: boost
           path: .
 
-      - run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          && tar xf xercesc.tar.gz -C ${INSTALL_DIR}
-          && tar xf root.tar.gz -C ${INSTALL_DIR}
-          && tar xf geant4.tar.gz -C ${INSTALL_DIR}
-          && tar xf boost.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build DD4hep
         run: >
@@ -257,7 +248,7 @@ jobs:
           -DDD4HEP_RELAX_PYVER=ON
           -DDD4HEP_IGNORE_GEANT4_TLS=ON
           -DCMAKE_CXX_STANDARD=17
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           -DBUILD_DOCS=OFF
           && make -j2
@@ -291,9 +282,7 @@ jobs:
           name: root
           path: .
 
-      - run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          && tar xf root.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
         run: >
@@ -303,7 +292,7 @@ jobs:
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           -DHEPMC3_ENABLE_PYTHON=OFF
           && make -j2
@@ -330,8 +319,6 @@ jobs:
             ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
             ccache-${{ runner.os }}-${{ github.job }}-
 
-      - run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-
       - name: Build
         run: >
           curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
@@ -346,6 +333,55 @@ jobs:
         with:
           name: pythia8
           path: pythia8.tar.gz
+
+  build_podio:
+    runs-on: macos-11
+    needs:
+      - build_root
+    steps:
+      - name: Install dependencies
+        run: brew install cmake ccache
+
+      - name: Install Python dependencies
+        run: pip3 install jinja2 pyyaml
+
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: root
+          path: .
+
+      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+
+      - name: Build podio
+        run: >
+          curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
+          && mkdir -p ${SRC_DIR}
+          && mv podio-* ${SRC_DIR}/podio
+          && mkdir -p ${BUILD_DIR}/podio && cd ${BUILD_DIR}/podio
+          && cmake ${SRC_DIR}/podio
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          -DBUILD_TESTING=OFF
+          -USE_EXTERNAL_CATCH2=OFF
+          && make -j2
+          && make install
+          && tar czf ../podio.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: podio
+          path: podio.tar.gz
 
   build_edm4hep:
     runs-on: macos-11
@@ -371,26 +407,12 @@ jobs:
         with:
           name: root
           path: .
+      - uses: actions/download-artifact@v3
+        with:
+          name: podio
+          path: .
 
-      - run: >
-          sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-          && tar xf root.tar.gz -C ${INSTALL_DIR}
-
-      - name: Build podio
-        run: >
-          curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
-          && mkdir -p ${SRC_DIR}
-          && mv podio-* ${SRC_DIR}/podio
-          && mkdir -p ${BUILD_DIR}/podio && cd ${BUILD_DIR}/podio
-          && cmake ${SRC_DIR}/podio
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -DBUILD_TESTING=OFF
-          -USE_EXTERNAL_CATCH2=OFF
-          && make -j2
-          && make install
+      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build edm4hep
         run: >
@@ -401,7 +423,7 @@ jobs:
           && cmake ${SRC_DIR}/edm4hep
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${INSTALL_DIR}
+          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           -DBUILD_TESTING=OFF
           -USE_EXTERNAL_CATCH2=OFF
@@ -425,6 +447,7 @@ jobs:
       - build_geant4
       - build_hepmc3
       - build_dd4hep
+      - build_podio
       - build_edm4hep
     steps:
       - uses: actions/download-artifact@v3
@@ -461,23 +484,26 @@ jobs:
           path: .
       - uses: actions/download-artifact@v3
         with:
+          name: podio
+          path: .
+      - uses: actions/download-artifact@v3
+        with:
           name: edm4hep
           path: .
 
-      - name: Unpack
-        run: sudo mkdir ${INSTALL_DIR} && sudo chown $USER ${INSTALL_DIR}
-      - run: tar xf tbb.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf boost.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf xercesc.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf pythia8.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf root.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf geant4.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf hepmc3.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf dd4hep.tar.gz -C ${INSTALL_DIR}
-      - run: tar xf edm4hep.tar.gz -C ${INSTALL_DIR}
+      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Make combined tarball
-        run: tar -c --xz -f deps.tar.gz -C ${INSTALL_DIR} .
+        run: tar -c --xz -f deps.tar.gz -C ${DEPENDENCY_DIR} .
 
       - uses: actions/upload-artifact@v3
         with:

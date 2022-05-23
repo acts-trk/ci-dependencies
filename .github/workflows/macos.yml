@@ -121,6 +121,7 @@ jobs:
           name: tbb
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
@@ -172,6 +173,7 @@ jobs:
           name: xercesc
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build Geant4
@@ -231,6 +233,7 @@ jobs:
           name: boost
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
@@ -282,6 +285,7 @@ jobs:
           name: root
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
@@ -359,6 +363,7 @@ jobs:
           name: root
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build podio
@@ -412,6 +417,7 @@ jobs:
           name: podio
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build edm4hep
@@ -491,6 +497,7 @@ jobs:
           name: edm4hep
           path: .
 
+      - run: mkdir -p ${DEPENDENCY_DIR}
       - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}

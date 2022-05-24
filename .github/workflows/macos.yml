@@ -5,7 +5,8 @@ on: [push, pull_request]
 env:
   SRC_DIR: ${{ github.workspace }}/src
   BUILD_DIR: ${{ github.workspace }}/build
-  INSTALL_DIR: /usr/local/acts
+  DEPENDENCY_DIR: /usr/local/acts
+  INSTALL_DIR: ${{ github.workspace }}/install
 
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
@@ -110,9 +111,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
           restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}
+            ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
             ccache-${{ runner.os }}-${{ github.job }}-
 
       - uses: actions/download-artifact@v3
@@ -120,8 +121,8 @@ jobs:
           name: tbb
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
         run: >
@@ -172,8 +173,8 @@ jobs:
           name: xercesc
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build Geant4
         run: >
@@ -212,9 +213,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
           restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}
+            ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
             ccache-${{ runner.os }}-${{ github.job }}-
 
       - uses: actions/download-artifact@v3
@@ -238,12 +239,12 @@ jobs:
           name: geant4
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build DD4hep
         run: >
@@ -291,8 +292,8 @@ jobs:
           name: root
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build
         run: >
@@ -369,8 +370,8 @@ jobs:
           name: root
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build podio
         run: >
@@ -423,9 +424,9 @@ jobs:
           name: podio
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Build edm4hep
         run: >
@@ -503,17 +504,17 @@ jobs:
           name: edm4hep
           path: .
 
-      - run: mkdir -p ${DEPENDENCY_DIR}
-      - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
 
       - name: Make combined tarball
         run: tar -c --xz -f deps.tar.gz -C ${DEPENDENCY_DIR} .
@@ -524,7 +525,7 @@ jobs:
           path: deps.tar.gz
 
   deploy_to_eos:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    #if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest # we don't need macOS here
     needs:
       - make_tarball

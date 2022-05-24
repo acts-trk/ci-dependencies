@@ -5,8 +5,7 @@ on: [push, pull_request]
 env:
   SRC_DIR: ${{ github.workspace }}/src
   BUILD_DIR: ${{ github.workspace }}/build
-  DEPENDENCY_DIR: ${{ github.workspace }}/dependency
-  INSTALL_DIR: ${{ github.workspace }}/install
+  INSTALL_DIR: /usr/local/acts
 
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
@@ -455,11 +454,11 @@ jobs:
       - build_boost
       - build_tbb
       - build_xercesc
-      - build_pythia8
       - build_root
       - build_geant4
-      - build_hepmc3
       - build_dd4hep
+      - build_hepmc3
+      - build_pythia8
       - build_podio
       - build_edm4hep
     steps:
@@ -477,10 +476,6 @@ jobs:
           path: .
       - uses: actions/download-artifact@v3
         with:
-          name: pythia8
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
           name: root
           path: .
       - uses: actions/download-artifact@v3
@@ -489,11 +484,15 @@ jobs:
           path: .
       - uses: actions/download-artifact@v3
         with:
+          name: dd4hep
+          path: .
+      - uses: actions/download-artifact@v3
+        with:
           name: hepmc3
           path: .
       - uses: actions/download-artifact@v3
         with:
-          name: dd4hep
+          name: pythia8
           path: .
       - uses: actions/download-artifact@v3
         with:
@@ -508,11 +507,11 @@ jobs:
       - run: tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf root.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      - run: tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
+      - run: tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
       - run: tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
 

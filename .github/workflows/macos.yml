@@ -27,7 +27,7 @@ env:
 
 jobs:
   build_boost:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Cache build
         uses: actions/cache@v3
@@ -67,7 +67,7 @@ jobs:
           path: tbb.tar.gz
 
   build_xercesc:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Install dependencies
         run: brew install cmake ccache
@@ -100,7 +100,7 @@ jobs:
           path: xercesc.tar.gz
 
   build_root:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_tbb
     steps:
@@ -152,7 +152,7 @@ jobs:
           path: root.tar.gz
 
   build_geant4:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_xercesc
     steps:
@@ -198,7 +198,7 @@ jobs:
           path: geant4.tar.gz
 
   build_podio:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_root
     steps:
@@ -247,7 +247,7 @@ jobs:
           path: podio.tar.gz
 
   build_edm4hep:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_root
       - build_podio
@@ -302,7 +302,7 @@ jobs:
           path: edm4hep.tar.gz
 
   build_dd4hep:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_boost
       - build_tbb
@@ -389,7 +389,7 @@ jobs:
           path: dd4hep.tar.gz
 
   build_hepmc3:
-    runs-on: macos-11
+    runs-on: macos-12
     needs:
       - build_root
     steps:
@@ -434,7 +434,7 @@ jobs:
           path: hepmc3.tar.gz
 
   build_pythia8:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Install dependencies
         run: brew install ccache

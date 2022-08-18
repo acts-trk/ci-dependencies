@@ -17,5 +17,14 @@ jobs:
 
       - run: brew install --build-from-source ./spack.rb
 
+      - name: Cache
+         uses: actions/cache@v3
+         with:
+           path: ${{ github.workspace }}/ccache
+           key: ${{ runner.os  }}_spack_${{ github.sha }}
+           restore-keys: |
+             ${{ runner.os  }}_spack_
+
       - run: spack spec ${SPEC}
       - run: spack install --only dependencies ${SPEC}
+

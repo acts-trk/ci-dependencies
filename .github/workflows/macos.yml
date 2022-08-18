@@ -21,7 +21,7 @@ jobs:
       - name: Cache
         uses: actions/cache@v3
         with:
-          path: /opt/homebrew/Cellar/spack/develop/opt/spack/
+          path: /usr/local/Cellar/Cellar/spack/develop/opt/spack/
           key: ${{ runner.os  }}_spack_${{ github.sha }}
           restore-keys: |
             ${{ runner.os  }}_spack_
@@ -33,5 +33,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: spack_cache
-          path: /opt/homebrew/Cellar/spack/develop/opt/spack/
+          path: /usr/local/Cellar/Cellar/spack/develop/opt/spack/
 

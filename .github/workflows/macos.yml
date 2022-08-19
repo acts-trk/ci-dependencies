@@ -30,7 +30,7 @@ jobs:
       - run: spack spec ${SPEC}
       - run: spack install ${SPEC}
 
-      - run: spack buildcache create -d buildcache ${SPEC}
+      - run: spack buildcache create -d $PWD/buildcache -u ${SPEC}
 
       - uses: actions/upload-artifact@v3
         with:

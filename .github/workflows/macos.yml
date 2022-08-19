@@ -3,8 +3,8 @@ name: macOS
 on: [push, pull_request]
 
 env:
-  SPEC: acts@main+dd4hep+examples+fatras+geant4+hepmc3+json+pythia8+python+tgeo+unit_tests ^root~opengl~x
-  # SPEC: nlohmann-json
+  # SPEC: acts@main+dd4hep+examples+fatras+geant4+hepmc3+json+pythia8+python+tgeo+unit_tests ^root~opengl~x
+  SPEC: nlohmann-json
 
 jobs:
   build_spack:
@@ -21,17 +21,18 @@ jobs:
       - name: Cache
         uses: actions/cache@v3
         with:
-          path: /usr/local/Cellar/spack/develop/opt/spack/
+          path: buildcache
           key: ${{ runner.os  }}_spack_${{ github.sha }}
           restore-keys: |
             ${{ runner.os  }}_spack_
 
       - run: spack spec ${SPEC}
-      - run: spack install --only dependencies ${SPEC}
+      - run: spack install ${SPEC}
 
+      - run: spack buildcache create -d buildcache ${SPEC}
 
       - uses: actions/upload-artifact@v3
         with:
           name: spack_cache
-          path: /usr/local/Cellar/spack/develop/opt/spack/
+          path: buildcache
 

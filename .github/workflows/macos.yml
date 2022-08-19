@@ -4,7 +4,8 @@ on: [push, pull_request]
 
 env:
   # SPEC: acts@main+dd4hep+examples+fatras+geant4+hepmc3+json+pythia8+python+tgeo+unit_tests ^root~opengl~x
-  SPEC: nlohmann-json
+  # SPEC: nlohmann-json
+  SPEC: libiconv@1.16
 
 jobs:
   build_spack:

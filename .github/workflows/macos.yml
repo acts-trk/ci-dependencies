@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   SRC_DIR: ${{ github.workspace }}/src
   BUILD_DIR: ${{ github.workspace }}/build
-  DEPENDENCY_DIR: /usr/local/acts
+  DEPENDENCY_DIR: /opt/hep
   INSTALL_DIR: ${{ github.workspace }}/install
 
   CCACHE_DIR: ${{ github.workspace }}/ccache

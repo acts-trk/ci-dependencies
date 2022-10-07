@@ -37,9 +37,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.BUILD_DIR }}
-          key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
+          key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}-r1
           restore-keys: |
-            builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
+            builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}-r1
             builddir-${{ runner.os }}-${{ github.job }}-
 
       - name: Build
@@ -47,7 +47,7 @@ jobs:
           curl -SL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xzC .
           && mv Python-* ${SRC_DIR} && cd ${SRC_DIR}
           && export CC="ccache $CC"
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && ${SRC_DIR}/configure
           --prefix=${DEPENDENCY_DIR}
           --enable-optimizations
@@ -126,7 +126,7 @@ jobs:
         run: >
           curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
           && mv xerces-c-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
@@ -175,7 +175,7 @@ jobs:
         run: >
           curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
           && mv root-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
@@ -227,7 +227,7 @@ jobs:
         run: >
           curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
           && mv geant4-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
@@ -431,7 +431,7 @@ jobs:
         run: >
           curl -SL https://github.com/AIDASoft/DD4hep/archive/refs/tags/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
           && mv DD4hep-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release
@@ -482,7 +482,7 @@ jobs:
         run: >
           curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
           && mv HepMC* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
           && cmake ${SRC_DIR}
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_BUILD_TYPE=Release

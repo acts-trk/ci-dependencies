@@ -48,7 +48,7 @@ jobs:
         run: >
           curl -SL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xzC .
           && ls -al
-          && mv Python_* ${SRC_DIR} && cd ${SRC_DIR}
+          && mv Python-* ${SRC_DIR} && cd ${SRC_DIR}
           && CC="ccache $CC"
           && ./configure.sh
           --prefix=${INSTALL_DIR}

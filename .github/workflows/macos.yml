@@ -51,7 +51,7 @@ jobs:
           && mv Python-* ${SRC_DIR} && cd ${SRC_DIR}
           && export CC="ccache $CC"
           && ls -al
-          && ./configure.sh
+          && ./configure
           --prefix=${INSTALL_DIR}
           --enable-optimizations
           && make -j2

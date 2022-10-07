@@ -331,13 +331,13 @@ jobs:
           name: podio
           path: .
 
-      - name: Install Python dependencies
-        run: ${DEPENDENCY_DIR}/bin/pip3 install jinja2 pyyaml
-
       - run: sudo mkdir -p ${DEPENDENCY_DIR}
       - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
       - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
       - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+
+      - name: Install Python dependencies
+        run: ${DEPENDENCY_DIR}/bin/pip3 install jinja2 pyyaml
 
       - name: Build edm4hep
         run: >

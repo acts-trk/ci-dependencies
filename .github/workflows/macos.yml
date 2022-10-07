@@ -24,417 +24,13 @@ env:
   PYTHIA8_VERSION: 307
   PODIO_VERSION: v00-14-01
   EDM4HEP_VERSION: v00-04-01
+  PYTHON_VERSION: 3.10.7
 
 jobs:
-  build_boost:
+  build_python:
     runs-on: macos-11
-    steps:
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.BOOST_VERSION }}
-          restore-keys: |
-            builddir-${{ runner.os }}-${{ github.job }}-${{ env.BOOST_VERSION }}
-            builddir-${{ runner.os }}-${{ github.job }}-
 
-      - name: Build
-        run: >
-          curl -SL https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz | tar -xzC .
-          && mv boost_* ${SRC_DIR} && cd ${SRC_DIR}
-          && ./bootstrap.sh 
-          --prefix=${INSTALL_DIR}
-          && ./b2 install
-          --build-dir=${BUILD_DIR}
-          && tar czf ../boost.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: boost
-          path: boost.tar.gz
-
-  build_tbb:
-    runs-on: ubuntu-latest # we don't actually need macOS here
-    steps:
-      - name: Download
-        run: >
-          curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/oneapi-tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
-          && tar czf tbb.tar.gz -C oneapi-tbb-* .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: tbb
-          path: tbb.tar.gz
-
-  build_xercesc:
-    runs-on: macos-11
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.XERCESC_VERSION }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.XERCESC_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - name: Build
-        run: >
-          curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
-          && mv xerces-c-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          && make -j2
-          && make install 
-          && tar czf ../xercesc.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: xercesc
-          path: xercesc.tar.gz
-
-  build_root:
-    runs-on: macos-11
-    needs:
-      - build_tbb
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: tbb
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build
-        run: >
-          curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
-          && mv root-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_CXX_STANDARD=17 
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -Dx11=ON 
-          -Dfftw3=ON 
-          -Dgdml=ON 
-          -Dminuit2=ON 
-          -Dopengl=ON 
-          -Droofit=ON 
-          -Dxml=ON 
-          && make -j2
-          && make install 
-          && tar czf ../root.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: root
-          path: root.tar.gz
-
-  build_geant4:
-    runs-on: macos-11
-    needs:
-      - build_xercesc
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: xercesc
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build Geant4
-        run: >
-          curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
-          && mv geant4-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DGEANT4_USE_GDML=ON
-          -DGEANT4_BUILD_CXXSTD=17
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          && make -j2
-          && make install
-          && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: geant4
-          path: geant4.tar.gz
-
-  build_podio:
-    runs-on: macos-11
-    needs:
-      - build_root
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Install Python dependencies
-        run: pip3 install jinja2 pyyaml
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: root
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build podio
-        run: >
-          curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
-          && mv podio-* ${SRC_DIR}
-          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -DBUILD_TESTING=OFF
-          -USE_EXTERNAL_CATCH2=OFF
-          && make -j2
-          && make install
-          && tar czf ../podio.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: podio
-          path: podio.tar.gz
-
-  build_edm4hep:
-    runs-on: macos-11
-    needs:
-      - build_root
-      - build_podio
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Install Python dependencies
-        run: pip3 install jinja2 pyyaml
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: root
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: podio
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build edm4hep
-        run: >
-          curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
-          && mv EDM4hep-* ${SRC_DIR}
-          && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -DBUILD_TESTING=OFF
-          -USE_EXTERNAL_CATCH2=OFF
-          && make -j2
-          && make install
-          && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: edm4hep
-          path: edm4hep.tar.gz
-
-  build_dd4hep:
-    runs-on: macos-11
-    needs:
-      - build_boost
-      - build_tbb
-      - build_xercesc
-      - build_root
-      - build_geant4
-      - build_podio
-      - build_edm4hep
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: boost
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: xercesc
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: tbb
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: root
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: geant4
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: podio
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: edm4hep
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build DD4hep
-        run: >
-          curl -SL https://github.com/AIDASoft/DD4hep/archive/refs/tags/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
-          && mv DD4hep-* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DDD4HEP_USE_GEANT4=ON
-          -DDD4HEP_USE_EDM4HEP=ON
-          -DDD4HEP_RELAX_PYVER=ON
-          -DDD4HEP_IGNORE_GEANT4_TLS=ON
-          -DDD4HEP_RELAX_PYVER=ON
-          -DCMAKE_CXX_STANDARD=17
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -DBUILD_DOCS=OFF
-          && make -j2
-          && make install
-          && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: dd4hep
-          path: dd4hep.tar.gz
-
-  build_hepmc3:
-    runs-on: macos-11
-    needs:
-      - build_root
-    steps:
-      - name: Install dependencies
-        run: brew install cmake ccache
-
-      - name: Cache build
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: root
-          path: .
-
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-
-      - name: Build
-        run: >
-          curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
-          && mv HepMC* ${SRC_DIR}
-          && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
-          && cmake ${SRC_DIR}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          -DHEPMC3_ENABLE_PYTHON=OFF
-          && make -j2
-          && make install
-          && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: hepmc3
-          path: hepmc3.tar.gz
-
-  build_pythia8:
-    runs-on: macos-11
     steps:
       - name: Install dependencies
         run: brew install ccache
@@ -442,127 +38,561 @@ jobs:
       - name: Cache build
         uses: actions/cache@v3
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
+          path: ${{ env.BUILD_DIR }}
+          key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
-            ccache-${{ runner.os }}-${{ github.job }}-
+            builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
+            builddir-${{ runner.os }}-${{ github.job }}-
 
       - name: Build
         run: >
-          curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
-          && mv pythia8* ${SRC_DIR}
-          && cd ${SRC_DIR}
-          && CC="ccache $CC" CXX="ccache $CXX" ./configure --prefix=${INSTALL_DIR}
+          curl -SL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xzC .
+          && mv Python_* ${SRC_DIR} && cd ${SRC_DIR}
+          && CC="ccache $CC"
+          && ./configure.sh
+          --prefix=${INSTALL_DIR}
+          --enable-optimizations
           && make -j2
           && make install
-          && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
+          && tar czf ../python.tar.gz -C ${INSTALL_DIR} .
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: pythia8
-          path: pythia8.tar.gz
+  # build_boost:
+    # runs-on: macos-11
+    # steps:
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.BUILD_DIR }}
+          # key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.BOOST_VERSION }}
+          # restore-keys: |
+            # builddir-${{ runner.os }}-${{ github.job }}-${{ env.BOOST_VERSION }}
+            # builddir-${{ runner.os }}-${{ github.job }}-
 
-  make_tarball:
-    runs-on: ubuntu-latest # we don't need macOS here
-    needs: 
-      - build_boost
-      - build_tbb
-      - build_xercesc
-      - build_root
-      - build_geant4
-      - build_hepmc3
-      - build_pythia8
-      - build_podio
-      - build_edm4hep
-      - build_dd4hep
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: boost
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: tbb
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: xercesc
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: root
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: geant4
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: dd4hep
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: hepmc3
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: pythia8
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: podio
-          path: .
-      - uses: actions/download-artifact@v3
-        with:
-          name: edm4hep
-          path: .
+      # - name: Build
+        # run: >
+          # curl -SL https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz | tar -xzC .
+          # && mv boost_* ${SRC_DIR} && cd ${SRC_DIR}
+          # && ./bootstrap.sh 
+          # --prefix=${INSTALL_DIR}
+          # && ./b2 install
+          # --build-dir=${BUILD_DIR}
+          # && tar czf ../boost.tar.gz -C ${INSTALL_DIR} .
 
-      - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-      - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: boost
+          # path: boost.tar.gz
 
-      - name: Make combined tarball
-        run: tar -c --xz -f deps.tar.gz -C ${DEPENDENCY_DIR} .
+  # build_tbb:
+    # runs-on: ubuntu-latest # we don't actually need macOS here
+    # steps:
+      # - name: Download
+        # run: >
+          # curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v${TBB_VERSION}/oneapi-tbb-${TBB_VERSION}-mac.tgz | tar -xzC .
+          # && tar czf tbb.tar.gz -C oneapi-tbb-* .
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: deps
-          path: deps.tar.gz
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: tbb
+          # path: tbb.tar.gz
 
-  deploy_to_eos:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest # we don't need macOS here
-    needs:
-      - make_tarball
-    env: 
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
-    steps:
-      - uses: actions/checkout@v2
+  # build_xercesc:
+    # runs-on: macos-11
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
 
-      - name: Install prerequisites
-        run: >
-          sudo apt-get install -y krb5-user krb5-config
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.XERCESC_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.XERCESC_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: deps
-          path: .
+      # - name: Build
+        # run: >
+          # curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
+          # && mv xerces-c-* ${SRC_DIR}
+          # && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # && make -j2
+          # && make install 
+          # && tar czf ../xercesc.tar.gz -C ${INSTALL_DIR} .
 
-      - name: Upload
-        run: >
-          echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
-          && sha=$(echo $GITHUB_SHA | head -c 7)
-          && name=deps.$sha.tar.gz
-          && mv deps.tar.gz $name
-          && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/
-          && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/deps.latest.tar.gz
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: xercesc
+          # path: xercesc.tar.gz
+
+  # build_root:
+    # runs-on: macos-11
+    # needs:
+      # - build_tbb
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: tbb
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build
+        # run: >
+          # curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
+          # && mv root-* ${SRC_DIR}
+          # && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DCMAKE_CXX_STANDARD=17 
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # -Dx11=ON 
+          # -Dfftw3=ON 
+          # -Dgdml=ON 
+          # -Dminuit2=ON 
+          # -Dopengl=ON 
+          # -Droofit=ON 
+          # -Dxml=ON 
+          # && make -j2
+          # && make install 
+          # && tar czf ../root.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: root
+          # path: root.tar.gz
+
+  # build_geant4:
+    # runs-on: macos-11
+    # needs:
+      # - build_xercesc
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: xercesc
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build Geant4
+        # run: >
+          # curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
+          # && mv geant4-* ${SRC_DIR}
+          # && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DGEANT4_USE_GDML=ON
+          # -DGEANT4_BUILD_CXXSTD=17
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # && make -j2
+          # && make install
+          # && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: geant4
+          # path: geant4.tar.gz
+
+  # build_podio:
+    # runs-on: macos-11
+    # needs:
+      # - build_root
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Install Python dependencies
+        # run: pip3 install jinja2 pyyaml
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: root
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build podio
+        # run: >
+          # curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
+          # && mv podio-* ${SRC_DIR}
+          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # -DBUILD_TESTING=OFF
+          # -USE_EXTERNAL_CATCH2=OFF
+          # && make -j2
+          # && make install
+          # && tar czf ../podio.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: podio
+          # path: podio.tar.gz
+
+  # build_edm4hep:
+    # runs-on: macos-11
+    # needs:
+      # - build_root
+      # - build_podio
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Install Python dependencies
+        # run: pip3 install jinja2 pyyaml
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: root
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: podio
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build edm4hep
+        # run: >
+          # curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
+          # && mv EDM4hep-* ${SRC_DIR}
+          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # -DBUILD_TESTING=OFF
+          # -USE_EXTERNAL_CATCH2=OFF
+          # && make -j2
+          # && make install
+          # && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: edm4hep
+          # path: edm4hep.tar.gz
+
+  # build_dd4hep:
+    # runs-on: macos-11
+    # needs:
+      # - build_boost
+      # - build_tbb
+      # - build_xercesc
+      # - build_root
+      # - build_geant4
+      # - build_podio
+      # - build_edm4hep
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: boost
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: xercesc
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: tbb
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: root
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: geant4
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: podio
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: edm4hep
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build DD4hep
+        # run: >
+          # curl -SL https://github.com/AIDASoft/DD4hep/archive/refs/tags/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
+          # && mv DD4hep-* ${SRC_DIR}
+          # && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DDD4HEP_USE_GEANT4=ON
+          # -DDD4HEP_USE_EDM4HEP=ON
+          # -DDD4HEP_RELAX_PYVER=ON
+          # -DDD4HEP_IGNORE_GEANT4_TLS=ON
+          # -DDD4HEP_RELAX_PYVER=ON
+          # -DCMAKE_CXX_STANDARD=17
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # -DBUILD_DOCS=OFF
+          # && make -j2
+          # && make install
+          # && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: dd4hep
+          # path: dd4hep.tar.gz
+
+  # build_hepmc3:
+    # runs-on: macos-11
+    # needs:
+      # - build_root
+    # steps:
+      # - name: Install dependencies
+        # run: brew install cmake ccache
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: root
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Build
+        # run: >
+          # curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
+          # && mv HepMC* ${SRC_DIR}
+          # && mkdir ${BUILD_DIR} && cd ${BUILD_DIR}
+          # && cmake ${SRC_DIR}
+          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          # -DCMAKE_BUILD_TYPE=Release
+          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
+          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+          # -DHEPMC3_ENABLE_PYTHON=OFF
+          # && make -j2
+          # && make install
+          # && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: hepmc3
+          # path: hepmc3.tar.gz
+
+  # build_pythia8:
+    # runs-on: macos-11
+    # steps:
+      # - name: Install dependencies
+        # run: brew install ccache
+
+      # - name: Cache build
+        # uses: actions/cache@v3
+        # with:
+          # path: ${{ env.CCACHE_DIR }}
+          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
+          # restore-keys: |
+            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
+            # ccache-${{ runner.os }}-${{ github.job }}-
+
+      # - name: Build
+        # run: >
+          # curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
+          # && mv pythia8* ${SRC_DIR}
+          # && cd ${SRC_DIR}
+          # && CC="ccache $CC" CXX="ccache $CXX" ./configure --prefix=${INSTALL_DIR}
+          # && make -j2
+          # && make install
+          # && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: pythia8
+          # path: pythia8.tar.gz
+
+  # make_tarball:
+    # runs-on: ubuntu-latest # we don't need macOS here
+    # needs: 
+      # - build_boost
+      # - build_tbb
+      # - build_xercesc
+      # - build_root
+      # - build_geant4
+      # - build_hepmc3
+      # - build_pythia8
+      # - build_podio
+      # - build_edm4hep
+      # - build_dd4hep
+    # steps:
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: boost
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: tbb
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: xercesc
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: root
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: geant4
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: dd4hep
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: hepmc3
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: pythia8
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: podio
+          # path: .
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: edm4hep
+          # path: .
+
+      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
+      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      # - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
+
+      # - name: Make combined tarball
+        # run: tar -c --xz -f deps.tar.gz -C ${DEPENDENCY_DIR} .
+
+      # - uses: actions/upload-artifact@v3
+        # with:
+          # name: deps
+          # path: deps.tar.gz
+
+  # deploy_to_eos:
+    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # runs-on: ubuntu-latest # we don't need macOS here
+    # needs:
+      # - make_tarball
+    # env: 
+      # DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      # DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
+    # steps:
+      # - uses: actions/checkout@v2
+
+      # - name: Install prerequisites
+        # run: >
+          # sudo apt-get install -y krb5-user krb5-config
+
+      # - uses: actions/download-artifact@v3
+        # with:
+          # name: deps
+          # path: .
+
+      # - name: Upload
+        # run: >
+          # echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
+          # && sha=$(echo $GITHUB_SHA | head -c 7)
+          # && name=deps.$sha.tar.gz
+          # && mv deps.tar.gz $name
+          # && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/
+          # && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/deps.latest.tar.gz

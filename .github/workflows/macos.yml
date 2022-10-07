@@ -33,16 +33,16 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: brew install ccache
+        run: brew install ccache openssl
 
       - name: Cache build
         uses: actions/cache@v3
         with:
-          path: ${{ env.BUILD_DIR }}
-          key: builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
           restore-keys: |
-            builddir-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
-            builddir-${{ runner.os }}-${{ github.job }}-
+            ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHON_VERSION }}
+            ccache-${{ runner.os }}-${{ github.job }}-
 
       - name: Build
         run: >
@@ -54,6 +54,7 @@ jobs:
           && ./configure
           --prefix=${INSTALL_DIR}
           --enable-optimizations
+          --with-openssl=$(brew --prefix openssl)
           && make -j2
           && make install
           && tar czf ../python.tar.gz -C ${INSTALL_DIR} .

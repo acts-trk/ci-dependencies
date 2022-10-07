@@ -49,7 +49,8 @@ jobs:
           curl -SL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xzC .
           && ls -al
           && mv Python-* ${SRC_DIR} && cd ${SRC_DIR}
-          && CC="ccache $CC"
+          && export CC="ccache $CC"
+          && ls -al
           && ./configure.sh
           --prefix=${INSTALL_DIR}
           --enable-optimizations

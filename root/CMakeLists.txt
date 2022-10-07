@@ -1,0 +1,39 @@
+
+set(ROOT_VERSION "6.26.00")
+
+set(ROOT_URL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz)
+set(ROOT_HASH "126383d34bd48961c5ba8de208de7a719c2eb091")
+
+set(prefix_path "${TBB_INSTALL_PATH};${PYTHON_INSTALL_PATH}")
+
+find_program(python_exe NAMES python3 python PATHS ${PYTHON_INSTALL_PATH}/bin NO_DEFAULT_PATH)
+
+ExternalProject_Add(root
+  URL ${ROOT_URL}
+  URL_HASH SHA1=${ROOT_HASH}
+  CMAKE_CACHE_ARGS
+  INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install
+  CMAKE_CACHE_ARGS
+  -DCMAKE_PREFIX_PATH:PATH=${prefix_path}
+  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+  -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+  -DPYTHON_EXECUTABLE:PATH=${python_exe}
+  -Dx11:BOOL=ON
+  -Dfftw3:BOOL=ON
+  -Dgdml:BOOL=ON 
+  -Dminuit2:BOOL=ON
+  -Dopengl:BOOL=ON 
+  -Droofit:BOOL=ON 
+  -Dxml:BOOL=ON
+  -Dbuiltin_glew:BOOL=ON
+  DOWNLOAD_EXTRACT_TIMESTAMP ON
+  DEPENDS tbb;python
+)
+
+
+
+ExternalProject_Get_property(root INSTALL_DIR)
+
+set(ROOT_INSTALL_PATH ${INSTALL_DIR} PARENT_SCOPE)
+
+install( DIRECTORY "${INSTALL_DIR}/" DESTINATION .)

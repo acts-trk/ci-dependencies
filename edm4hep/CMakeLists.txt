@@ -1,0 +1,46 @@
+set(EDM4HEP_VERSION "00-04-01")
+
+set(EDM4HEP_URL https://github.com/key4hep/EDM4hep/archive/refs/tags/v${EDM4HEP_VERSION}.tar.gz)
+set(EDM4HEP_HASH "8c4e3c439115380ebcac839a01cdb024bad4a4e9")
+
+set(prefix_path "${ROOT_INSTALL_PATH};${PYTHON_INSTALL_PATH};${PODIO_INSTALL_PATH}")
+
+find_program(python_exe NAMES python3 python PATHS ${PYTHON_INSTALL_PATH}/bin NO_DEFAULT_PATH)
+
+find_program(pip_exe NAMES python3 python PATHS ${PYTHON_INSTALL_PATH}/bin NO_DEFAULT_PATH)
+
+execute_process (COMMAND "${python_exe}" -m venv "${CMAKE_CURRENT_BINARY_DIR}/venv")
+
+find_program(python_exe NAMES python3 python PATHS ${CMAKE_CURRENT_BINARY_DIR}/venv NO_DEFAULT_PATH)
+
+message(STATUS ${python_exe})
+
+execute_process (COMMAND "${python_exe}" -m pip install Jinja2 PyYAML)
+set (ENV{VIRTUAL_ENV} "${CMAKE_CURRENT_BINARY_DIR}/venv")
+
+
+ExternalProject_Add(edm4hep
+  URL ${EDM4HEP_URL}
+  URL_HASH SHA1=${EDM4HEP_HASH}
+  CMAKE_CACHE_ARGS
+  INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install
+  CMAKE_CACHE_ARGS
+  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+  -DCMAKE_PREFIX_PATH:PATH=${prefix_path}
+  -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+  -DCMAKE_CXX_COMPILER_LAUNCHER:STRING=${CMAKE_CXX_COMPILER_LAUNCHER}
+  -DPython3_EXECUTABLE:PATH=${python_exe}
+  -DPython_EXECUTABLE:PATH=${python_exe}
+  -DBUILD_TESTING:BOOL=OFF
+  -DUSE_EXTERNAL_CATCH2:BOOL=OFF
+  DOWNLOAD_EXTRACT_TIMESTAMP ON
+  DEPENDS root;python;podio
+)
+
+ExternalProject_Get_property(edm4hep INSTALL_DIR)
+
+set(EDM4HEP_INSTALL_PATH ${INSTALL_DIR} PARENT_SCOPE)
+
+install( DIRECTORY "${INSTALL_DIR}/" DESTINATION .)
+

@@ -363,6 +363,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
           -DBUILD_TESTING=OFF
           -USE_EXTERNAL_CATCH2=OFF
+          -DPython_EXECUTABLE="$DEPENDENCY_DIR/bin/python3"
           && make -j2
           && make install
           && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .

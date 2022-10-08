@@ -347,6 +347,8 @@ jobs:
         run: ls -la ${DEPENDENCY_DIR}/bin
       - name: debug
         run: echo "$DEPENDENCY_DIR/bin:$PATH"
+      - name: debug
+        run: echo "$PYTHONHOME"
 
       - name: Build edm4hep
         run: >

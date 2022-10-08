@@ -340,6 +340,13 @@ jobs:
 
       - name: Install Python dependencies
         run: ${DEPENDENCY_DIR}/bin/pip3 install jinja2 pyyaml
+      
+      - name: debug
+        run: ls -la ${DEPENDENCY_DIR}
+      - name: debug
+        run: ls -la ${DEPENDENCY_DIR}/bin
+      - name: debug
+        run: echo "$DEPENDENCY_DIR/bin:$PATH"
 
       - name: Build edm4hep
         run: >

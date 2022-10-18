@@ -31,7 +31,9 @@ jobs:
     runs-on: macos-11
     steps:
       - name: Install dependencies
-        run: brew install ccache openssl@3 gettext
+        run: >
+          brew install ccache openssl@3 gettext
+          brew link gettext --force
 
       - name: Cache build
         uses: actions/cache@v3
@@ -386,7 +388,9 @@ jobs:
       - build_edm4hep
     steps:
       - name: Install dependencies
-        run: brew install cmake ccache openssl@3 gettext
+        run: >
+          brew install cmake ccache openssl@3 gettext
+          brew link gettext --force
 
       - name: Cache build
         uses: actions/cache@v3

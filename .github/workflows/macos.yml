@@ -32,8 +32,10 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install ccache openssl@3 gettext
-          brew link gettext --force
+          brew install ccache openssl@3
+          brew unlink python
+          brew unlink python3
+          brew unlink gettext
 
       - name: Cache build
         uses: actions/cache@v3
@@ -389,8 +391,10 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          brew install cmake ccache openssl@3 gettext
-          brew link gettext --force
+          brew install cmake ccache openssl@3
+          brew unlink python
+          brew unlink python3
+          brew unlink gettext
 
       - name: Cache build
         uses: actions/cache@v3

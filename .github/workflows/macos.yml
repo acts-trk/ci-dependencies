@@ -33,8 +33,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install ccache openssl@3
-          brew unlink python
-          brew unlink python3
           brew unlink gettext
 
       - name: Cache build
@@ -392,8 +390,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install cmake ccache openssl@3
-          brew unlink python
-          brew unlink python3
           brew unlink gettext
 
       - name: Cache build

@@ -12,9 +12,92 @@ env:
   INSTALL_DEPENDENCIES: brew install python@3.12 cmake ccache xerces-c eigen boost tbb pcre glew gl2ps
 
 jobs:
+
+  build_python:
+    runs-on: macos-14
+    steps:
+      - name: Install dependencies
+        run: ${INSTALL_DEPENDENCIES}
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-python
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-python
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/checkout@v4
+
+      - name: Initial configure
+        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_PARALLEL_LEVEL=3
+
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- python
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_1
+          path: |
+            build.tar.gz
+            install.tar.gz
+
+  build_tbb:
+    runs-on: macos-14
+    needs: [build_python]
+    steps:
+      - name: Install dependencies
+        run: ${INSTALL_DEPENDENCIES}
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-tbb
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-tbb
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_1
+          path: .
+
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- tbb
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_2
+          path: |
+            build.tar.gz
+            install.tar.gz
   
   build_nlohmann_json:
     runs-on: macos-14
+    needs: [build_tbb]
     steps:
       - name: Install dependencies
         run: ${INSTALL_DEPENDENCIES}
@@ -30,13 +113,20 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Configure
-        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DPython_EXECUTABLE=/opt/homebrew/bin/python3.12
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_2
+          path: .
 
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
 
       - name: Build
         run: > 
-          cmake --build ${BUILD_DIR} -- nlohmann_json -j2
+          cmake --build ${BUILD_DIR} -- nlohmann_json
 
       - name: Package build
         run: |
@@ -45,7 +135,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: build_1
+          name: build_3
           path: |
             build.tar.gz
             install.tar.gz
@@ -74,7 +164,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: build_1
+          name: build_3
           path: .
 
       - run: |
@@ -83,77 +173,21 @@ jobs:
           mkdir ${INSTALL_DIR}
           tar xf install.tar.gz -C ${INSTALL_DIR}
 
-      - name: Configure
-        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DPython_EXECUTABLE=/opt/homebrew/bin/python3.12
-
-
       - name: Build
         run: > 
-          cmake --build ${BUILD_DIR} -- root -j2
+          cmake --build ${BUILD_DIR} -- root
 
-      - uses: actions/upload-artifact@v3
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: root
-          path: ${{ env.INSTALL_DIR }}/root
-
-  # build_root:
-    # runs-on: macos-14
-    # needs:
-      # - build_python
-      # - build_tbb
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake ccache openssl@3
-
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.ROOT_VERSION }}-r1
-            # ccache-${{ runner.os }}-${{ github.job }}-
-
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: python
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: tbb
-          # path: .
-
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-
-      # - name: Build
-        # run: >
-          # curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
-          # && mv root-* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && export PATH="$DEPENDENCY_DIR/bin:$PATH"
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_CXX_STANDARD=17 
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -Dx11=ON 
-          # -Dfftw3=ON 
-          # -Dgdml=ON 
-          # -Dminuit2=ON 
-          # -Dopengl=ON 
-          # -Droofit=ON 
-          # -Dxml=ON 
-          # && make -j2
-          # && make install 
-          # && tar czf ../root.tar.gz -C ${INSTALL_DIR} .
-
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: root
-          # path: root.tar.gz
+          name: build_4
+          path: |
+            build.tar.gz
+            install.tar.gz
 
   # build_geant4:
     # runs-on: macos-14

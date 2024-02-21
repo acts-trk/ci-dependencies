@@ -188,6 +188,147 @@ jobs:
             build.tar.gz
             install.tar.gz
 
+  build_podio_edm4hep:
+    runs-on: macos-14
+
+    needs: [build_root]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencies.sh
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-podio
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-podio
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_4
+          path: .
+
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- podio edm4hep
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_5
+          path: |
+            build.tar.gz
+            install.tar.gz
+
+  build_geant4:
+    runs-on: macos-14
+
+    needs: [build_podio_edm4hep]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencies.sh
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-geant4
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-geant4
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_5
+          path: .
+
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- geant4
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_6
+          path: |
+            build.tar.gz
+            install.tar.gz
+
+  build_dd4hep:
+    runs-on: macos-14
+
+    needs: [build_geant4]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencies.sh
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-dd4hep
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-dd4hep
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_6
+          path: .
+
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- dd4hep
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_7
+          path: |
+            build.tar.gz
+            install.tar.gz
+
   # build_geant4:
     # runs-on: macos-14
     # needs:

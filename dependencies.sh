@@ -4,7 +4,7 @@ set -e
 # @TODO Only on macos
 
 
-brew upgrade
+brew update
 brew install ccache xerces-c eigen boost 
 brew reinstall cmake
 

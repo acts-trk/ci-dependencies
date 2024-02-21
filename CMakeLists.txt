@@ -117,12 +117,15 @@ ExternalProject_Add(root
   -Dpythia6=OFF
   -Dpythia8=OFF
   -Dfftw3=OFF
+  -Dbuiltin_tbb=OFF
   -Dbuiltin_cfitsio=ON
   -Dbuiltin_xxhash=ON
   -Dbuiltin_afterimage=ON
   -Dbuiltin_openssl=OFF
   -Dbuiltin_ftgl=ON
   -Dbuiltin_gsl=ON
+  -Dbuiltin_gl2ps=ON
+  -Dbuiltin_glew=ON
   -Dgfal=OFF
   -Ddavix=OFF
   -Dbuiltin_vdt=ON
@@ -179,7 +182,9 @@ ExternalProject_Add(edm4hep
   -DUSE_EXTERNAL_CATCH2=OFF
 )
 
-
+if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
+  set(CMAKE_BUILD_PARALLEL_LEVEL 1)
+endif()
 
 ExternalProject_Add(dd4hep
   PREFIX dd4hep

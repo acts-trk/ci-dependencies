@@ -34,12 +34,19 @@ endif()
 find_package(OpenSSL REQUIRED)
 find_package(Curses REQUIRED)
 
+set(openssl_option "")
+if(APPLE)
+  execute_process(COMMAND brew --prefix openssl
+                   OUTPUT_VARIABLE _openssl_dir)
+  set(openssl_option "--with-openssl=${_openssl_dir}")
+endif()
+
 ExternalProject_Add(python
   PREFIX python
   URL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
   URL_HASH SHA1=459959e7dbeb89931db03457ea1f012353e34bce
   BUILD_IN_SOURCE ON
-  CONFIGURE_COMMAND CFLAGS=-fPIC ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations
+  CONFIGURE_COMMAND CFLAGS=-fPIC ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations ${openssl_option}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
@@ -118,6 +125,7 @@ ExternalProject_Add(pythia8
   BUILD_IN_SOURCE ON
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_INSTALL_PREFIX}/pythia8/${PYTHIA8_VERSION} --cxx=${CMAKE_CXX_COMPILER} ${pythia_flags}
   PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/pythia8307-cpp20.patch
+  BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
 ExternalProject_Add(nlohmann_json

@@ -9,7 +9,7 @@ env:
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
 
-  INSTALL_DEPENDENCIES: brew install python@3.12 cmake ccache xerces-c eigen boost tbb pcre glew gl2ps
+  INSTALL_DEPENDENCIES: brew install -f cmake ccache xerces-c eigen boost pcre glew gl2ps
 
 jobs:
 

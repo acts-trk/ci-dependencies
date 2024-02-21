@@ -6,4 +6,4 @@ set -e
 
 brew install ccache xerces-c eigen boost 
 brew reinstall cmake
-brew unlink r
+brew unlink r || true

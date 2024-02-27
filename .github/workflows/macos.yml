@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install ccache openssl@3
-          brew unlink gettext
+          brew unlink gettext || true
 
       # - name: Cache build
         # uses: actions/cache@v3
@@ -153,7 +153,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install cmake ccache openssl@3
-          brew unlink r
+          brew unlink r || true
 
       - name: Cache build
         uses: actions/cache@v3
@@ -385,7 +385,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install cmake ccache openssl@3
-          brew unlink gettext
+          brew unlink gettext || true
 
       - name: Cache build
         uses: actions/cache@v3

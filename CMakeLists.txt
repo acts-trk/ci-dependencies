@@ -8,7 +8,7 @@ set(PYTHON_VERSION 3.12.2)
 set(TBB_VERSION 2021.11.0)
 set(GEANT4_VERSION 11.1.3)
 set(HEPMC3_VERSION 3.2.5)
-set(PYTHIA8_VERSION 309)
+set(PYTHIA8_VERSION 310)
 set(JSON_VERSION 3.11.2)
 set(ROOT_VERSION 6.30.02)
 set(ROOT_HASH SHA1=8fc49479265ccf493cfe9bb36ab1c1f23967b99a)
@@ -50,6 +50,23 @@ ExternalProject_Add(python
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
+string(REGEX MATCH "^([0-9]+\\.[0-9]+)\\.[0-9]+$" _temp ${PYTHON_VERSION})
+set(PYTHON_VERSION_MAJOR_MINOR ${CMAKE_MATCH_1})
+
+# We're guessing / expecting this file to be there when it's needed
+set(Python_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION}/bin/python${PYTHON_VERSION_MAJOR_MINOR}")
+set(_python_stamp_file "${CMAKE_CURRENT_BINARY_DIR}/python_exe_exists.stamp")
+
+message(STATUS "Python executable: ${Python_EXECUTABLE}")
+
+add_custom_command(OUTPUT ${_python_stamp_file}
+  COMMAND ${CMAKE_COMMAND} -E env sh -c "( test -e ${Python_EXECUTABLE} && touch ${_python_stamp_file} ) || ( echo 'Python executable not found at ${Python_EXECUTABLE}!' && exit 1 )"
+  VERBATIM
+  COMMENT "Checking for Python executable"
+  DEPENDS python)
+add_custom_target(PythonExeExists DEPENDS ${_python_stamp_file})
+            
+
 ExternalProject_Add(tbb
   PREFIX tbb
   URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v${TBB_VERSION}.tar.gz
@@ -64,17 +81,6 @@ ExternalProject_Add(tbb
   -DTBB_TEST=OFF
   BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
-
-string(REGEX MATCH "^([0-9]+\\.[0-9]+)\\.[0-9]+$" _temp ${PYTHON_VERSION})
-set(PYTHON_VERSION_MAJOR_MINOR ${CMAKE_MATCH_1})
-
-# find_file(python_exe python${PYTHON_VERSION_MAJOR_MINOR} PATHS ${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION}/bin NO_DEFAULT_PATH NO_CACHE)
-# set(Python_EXECUTABLE ${python_exe})
-
-# We're guessing / expecting this file to be there when it's needed
-set(Python_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION}/bin/python${PYTHON_VERSION_MAJOR_MINOR}")
-
-message(STATUS "Python executable: ${Python_EXECUTABLE}")
 
 ExternalProject_Add(geant4 
   PREFIX geant4
@@ -114,17 +120,21 @@ ExternalProject_Add(hepmc3
 )
 
 # Hard-coding the compile flags is not ideal, but seems needed
-set(pythia_flags "")
+set(pythia_configure  "./configure")
+set(pythia_cxx_common "-O2 -std=c++${CMAKE_CXX_STANDARD} -pedantic -W -Wall -Wshadow -fPIC -pthread")
 if(APPLE)
-  set(pythia_flags "--cxx-common=\"-isysroot ${CMAKE_OSX_SYSROOT} -O2 -std=c++11 -pedantic -W -Wall -Wshadow -fPIC -pthread\"")
+  list(APPEND pythia_configure "--cxx-common='-isysroot ${CMAKE_OSX_SYSROOT} ${pythia_cxx_common}'")
+else()
+  list(APPEND pythia_configure "${pythia_cxx_common}")
 endif()
+
 ExternalProject_Add(pythia8
-  PREFIX pythia8
+  PREFIX pythia8 
+  DEPENDS PythonExeExists
   URL https://pythia.org/download/pythia83/pythia8${PYTHIA8_VERSION}.tgz
-  URL_HASH SHA1=9749e3554a30ff41a52d98811d7cfef689da329d
+  URL_HASH SHA1=ad4279f32fc6c6f2396d96958461ca446ddd8a6b
   BUILD_IN_SOURCE ON
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_INSTALL_PREFIX}/pythia8/${PYTHIA8_VERSION} --cxx=${CMAKE_CXX_COMPILER} ${pythia_flags}
-  PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/pythia8307-cpp20.patch
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CXX=${CMAKE_CXX_COMPILER} ${pythia_configure}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
@@ -141,7 +151,7 @@ ExternalProject_Add(nlohmann_json
 
 ExternalProject_Add(root
   PREFIX root
-  DEPENDS nlohmann_json python tbb
+  DEPENDS nlohmann_json PythonExeExists tbb
   URL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz
   URL_HASH ${ROOT_HASH}
   LIST_SEPARATOR |
@@ -213,7 +223,7 @@ set(venv_python_exe ${venv_dir}/bin/python)
 add_custom_command(OUTPUT ${venv_python_exe}
                    COMMAND ${Python_EXECUTABLE} -m venv ${venv_dir} && ${venv_python_exe} -m pip install --upgrade pip jinja2 pyyaml
                    COMMENT "Creating virtualenv for edm4hep build"
-                   DEPENDS python)
+                   DEPENDS PythonExeExists)
 
 add_custom_target(PythonVenv DEPENDS ${venv_python_exe})
 

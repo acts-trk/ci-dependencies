@@ -199,7 +199,7 @@ ExternalProject_Add(root
 
 ExternalProject_Add(podio
   PREFIX podio
-  DEPENDS root python
+  DEPENDS root PythonExeExists
   URL https://github.com/AIDASoft/podio/archive/refs/tags/v${PODIO_VERSION}.tar.gz
   URL_HASH SHA1=600b99000f0c7a6c25c04a8b32bebf70413c9f57
   LIST_SEPARATOR |
@@ -250,7 +250,7 @@ ExternalProject_Add(edm4hep
 
 ExternalProject_Add(dd4hep
   PREFIX dd4hep
-  DEPENDS edm4hep geant4 python
+  DEPENDS edm4hep geant4 PythonExeExists
   URL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz
   URL_HASH SHA1=3e8a1d07a72689a24db04466b263094bbe16240f
   LIST_SEPARATOR |

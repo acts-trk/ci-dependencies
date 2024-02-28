@@ -15,7 +15,7 @@ run brew install ccache xerces-c eigen boost
 run brew reinstall cmake
 
 ec=0
-run brew list r || ec=$?
+brew list r || ec=$?
 if [ $ec -eq 0 ]; then
   run brew unlink r
 fi

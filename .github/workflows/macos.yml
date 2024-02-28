@@ -329,421 +329,115 @@ jobs:
             build.tar.gz
             install.tar.gz
 
-  # build_geant4:
-    # runs-on: macos-14
-    # needs:
-      # - build_xercesc
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake ccache
+  build_hepmc3:
+    runs-on: macos-14
 
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.GEANT4_VERSION }}
-            # ccache-${{ runner.os }}-${{ github.job }}-
+    needs: [build_dd4hep]
 
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: xercesc
-          # path: .
+    steps:
+      - uses: actions/checkout@v4
 
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
+      - name: Install dependencies
+        run: ./dependencies.sh
 
-      # - name: Build Geant4
-        # run: >
-          # curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
-          # && mv geant4-* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DGEANT4_USE_GDML=ON
-          # -DGEANT4_BUILD_CXXSTD=17
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # && make -j2
-          # && make install
-          # && tar czf ../geant4.tar.gz -C ${INSTALL_DIR} .
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-hepmc3
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-hepmc3
+            ccache-${{ runner.os }}-${{ github.job }}-
 
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: geant4
-          # path: geant4.tar.gz
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_7
+          path: .
 
-  # build_podio:
-    # runs-on: macos-14
-    # needs:
-      # - build_python
-      # - build_root
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake ccache openssl@3
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
 
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.PODIO_VERSION }}
-            # ccache-${{ runner.os }}-${{ github.job }}-
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- hepmc3
 
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: python
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: root
-          # path: .
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
 
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_8
+          path: |
+            build.tar.gz
+            install.tar.gz
 
-      # - name: Install Python dependencies
-        # run: ${DEPENDENCY_DIR}/bin/pip3 install jinja2 pyyaml
+  build_pythia8:
+    runs-on: macos-14
 
-      # - name: Build podio
-        # run: >
-          # curl -SL https://github.com/AIDASoft/podio/archive/refs/tags/${PODIO_VERSION}.tar.gz | tar -xzC .
-          # && mv podio-* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && export PATH="$DEPENDENCY_DIR/bin:$PATH"
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DBUILD_TESTING=OFF
-          # -USE_EXTERNAL_CATCH2=OFF
-          # && make -j2
-          # && make install
-          # && tar czf ../podio.tar.gz -C ${INSTALL_DIR} .
+    needs: [build_pythia8]
 
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: podio
-          # path: podio.tar.gz
+    steps:
+      - uses: actions/checkout@v4
 
-  # build_edm4hep:
-    # runs-on: macos-14
-    # needs:
-      # - build_python
-      # - build_root
-      # - build_podio
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake ccache openssl@3
+      - name: Install dependencies
+        run: ./dependencies.sh
 
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.EDM4HEP_VERSION }}
-            # ccache-${{ runner.os }}-${{ github.job }}-
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-pythia8
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-pythia8
+            ccache-${{ runner.os }}-${{ github.job }}-
 
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: python
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: root
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: podio
-          # path: .
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_8
+          path: .
 
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
 
-      # - name: Install Python dependencies
-        # run: ${DEPENDENCY_DIR}/bin/pip3 install jinja2 pyyaml
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- hepmc3
 
-      # - name: Build edm4hep
-        # run: >
-          # curl -SL https://github.com/key4hep/EDM4hep/archive/refs/tags/${EDM4HEP_VERSION}.tar.gz | tar -xzC .
-          # && mv EDM4hep-* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && export PATH="$DEPENDENCY_DIR/bin:$PATH"
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DBUILD_TESTING=OFF
-          # -USE_EXTERNAL_CATCH2=OFF
-          # -DPython_EXECUTABLE="$DEPENDENCY_DIR/bin/python3"
-          # && make -j2
-          # && make install
-          # && tar czf ../edm4hep.tar.gz -C ${INSTALL_DIR} .
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
 
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: edm4hep
-          # path: edm4hep.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_9
+          path: |
+            build.tar.gz
+            install.tar.gz
 
-  # build_dd4hep:
-    # runs-on: macos-14
-    # needs:
-      # - build_python
-      # - build_boost
-      # - build_tbb
-      # - build_xercesc
-      # - build_root
-      # - build_geant4
-      # - build_podio
-      # - build_edm4hep
-    # steps:
-      # - name: Install dependencies
-        # run: |
-          # brew install cmake ccache openssl@3
-          # brew unlink gettext
+  make_tarball:
+    runs-on: ubuntu-latest # we don't need macOS here
+    needs: 
+      - build_pythia8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_9
+          path: .
 
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.DD4HEP_VERSION }}-r1
-            # ccache-${{ runner.os }}-${{ github.job }}-
-
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: python
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: boost
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: xercesc
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: tbb
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: root
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: geant4
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: podio
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: edm4hep
-          # path: .
-
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
-
-      # - name: Build DD4hep
-        # run: >
-          # curl -SL https://github.com/AIDASoft/DD4hep/archive/refs/tags/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
-          # && mv DD4hep-* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && export PATH="$DEPENDENCY_DIR/bin:$PATH"
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DDD4HEP_USE_GEANT4=ON
-          # -DDD4HEP_USE_EDM4HEP=ON
-          # -DDD4HEP_RELAX_PYVER=ON
-          # -DDD4HEP_IGNORE_GEANT4_TLS=ON
-          # -DDD4HEP_RELAX_PYVER=ON
-          # -DCMAKE_CXX_STANDARD=17
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DBUILD_DOCS=OFF
-          # && make -j2
-          # && make install
-          # && tar czf ../dd4hep.tar.gz -C ${INSTALL_DIR} .
-
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: dd4hep
-          # path: dd4hep.tar.gz
-
-  # build_hepmc3:
-    # runs-on: macos-14
-    # needs:
-      # - build_root
-    # steps:
-      # - name: Install dependencies
-        # run: brew install cmake ccache
-
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.HEPMC_VERSION }}
-            # ccache-${{ runner.os }}-${{ github.job }}-
-
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: root
-          # path: .
-
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-
-      # - name: Build
-        # run: >
-          # curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC_VERSION}/HepMC3-${HEPMC_VERSION}.tar.gz | tar -xzC .
-          # && mv HepMC* ${SRC_DIR}
-          # && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-          # && cmake ${SRC_DIR}
-          # -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          # -DCMAKE_BUILD_TYPE=Release
-          # -DCMAKE_PREFIX_PATH=${DEPENDENCY_DIR}
-          # -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
-          # -DHEPMC3_ENABLE_PYTHON=OFF
-          # && make -j2
-          # && make install
-          # && tar czf ../hepmc3.tar.gz -C ${INSTALL_DIR} .
-
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: hepmc3
-          # path: hepmc3.tar.gz
-
-  # build_pythia8:
-    # runs-on: macos-14
-    # steps:
-      # - name: Install dependencies
-        # run: brew install ccache
-
-      # - name: Cache build
-        # uses: actions/cache@v3
-        # with:
-          # path: ${{ env.CCACHE_DIR }}
-          # key: ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
-          # restore-keys: |
-            # ccache-${{ runner.os }}-${{ github.job }}-${{ env.PYTHIA8_VERSION }}
-            # ccache-${{ runner.os }}-${{ github.job }}-
-
-      # - name: Build
-        # run: >
-          # curl -SL https://pythia.org/download/pythia8${PYTHIA8_VERSION:0:1}/pythia8${PYTHIA8_VERSION}.tgz | tar -xzC .
-          # && mv pythia8* ${SRC_DIR}
-          # && cd ${SRC_DIR}
-          # && CC="ccache $CC" CXX="ccache $CXX" ./configure --prefix=${INSTALL_DIR}
-          # && make -j2
-          # && make install
-          # && tar czf ../pythia8.tar.gz -C ${INSTALL_DIR} .
-
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: pythia8
-          # path: pythia8.tar.gz
-
-  # make_tarball:
-    # runs-on: ubuntu-latest # we don't need macOS here
-    # needs: 
-      # - build_python
-      # - build_tbb
-      # - build_xercesc
-      # - build_root
-      # - build_geant4
-      # - build_hepmc3
-      # - build_pythia8
-      # - build_podio
-      # - build_edm4hep
-      # - build_dd4hep
-    # steps:
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: python
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: boost
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: tbb
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: xercesc
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: root
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: geant4
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: dd4hep
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: hepmc3
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: pythia8
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: podio
-          # path: .
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: edm4hep
-          # path: .
-
-      # - run: sudo mkdir -p ${DEPENDENCY_DIR}
-      # - run: sudo tar xf python.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf tbb.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf boost.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf xercesc.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf root.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf geant4.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf dd4hep.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf hepmc3.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf pythia8.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf podio.tar.gz -C ${DEPENDENCY_DIR}
-      # - run: sudo tar xf edm4hep.tar.gz -C ${DEPENDENCY_DIR}
-
-      # - name: Make combined tarball
-        # run: tar -c --xz -f deps.tar.gz -C ${DEPENDENCY_DIR} .
-
-      # - uses: actions/upload-artifact@v3
-        # with:
-          # name: deps
-          # path: deps.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deps
+          path: |
+            install.tar.gz
 
   # deploy_to_eos:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/master'

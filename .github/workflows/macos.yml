@@ -9,8 +9,6 @@ env:
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
 
-  INSTALL_DEPENDENCIES: brew install ccache xerces-c eigen boost && brew reinstall cmake
-
 jobs:
 
   build_python:
@@ -439,31 +437,31 @@ jobs:
           path: |
             install.tar.gz
 
-  # deploy_to_eos:
-    # if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    # runs-on: ubuntu-latest # we don't need macOS here
-    # needs:
-      # - make_tarball
-    # env: 
-      # DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      # DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
-    # steps:
-      # - uses: actions/checkout@v2
+  deploy_to_eos:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest # we don't need macOS here
+    needs:
+      - make_tarball
+    env: 
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PWD: ${{ secrets.DEPLOY_PWD }}
+    steps:
+      - uses: actions/checkout@v4
 
-      # - name: Install prerequisites
-        # run: >
-          # sudo apt-get install -y krb5-user krb5-config
+      - name: Install prerequisites
+        run: >
+          sudo apt-get install -y krb5-user krb5-config
 
-      # - uses: actions/download-artifact@v3
-        # with:
-          # name: deps
-          # path: .
+      - uses: actions/download-artifact@v4
+        with:
+          name: deps
+          path: .
 
-      # - name: Upload
-        # run: >
-          # echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
-          # && sha=$(echo $GITHUB_SHA | head -c 7)
-          # && name=deps.$sha.tar.gz
-          # && mv deps.tar.gz $name
-          # && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/
-          # && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/deps.latest.tar.gz
+      - name: Upload
+        run: >
+          echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
+          && sha=$(echo $GITHUB_SHA | head -c 7)
+          && name=deps.$sha.tar.gz
+          && mv deps.tar.gz $name
+          && scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/macOS/cmake
+          && ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/macOS/cmake/deps.latest.tar.gz

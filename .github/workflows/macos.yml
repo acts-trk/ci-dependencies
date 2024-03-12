@@ -49,6 +49,32 @@ jobs:
             build.tar.gz
             install.tar.gz
 
+  # can run in parallel, not needed by anything else
+  build_eigen_boost:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencies.sh
+
+      - name: Initial configure
+        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_PARALLEL_LEVEL=3
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- boost eigen
+
+      - name: Package build
+        run: |
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_boost_eigen
+          path: |
+            install.tar.gz
+
   build_tbb:
     runs-on: macos-13
     needs: [build_python]
@@ -425,13 +451,36 @@ jobs:
     runs-on: ubuntu-latest # we don't need macOS here
     needs: 
       - build_pythia8
+      - build_boost_eigen
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: build_9
           path: .
 
-      - uses: actions/upload-artifact@v4
+      - name: Unpack full bundle
+        run: |
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+          rm install.tar.gz
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_boost_eigen
+          path: .
+
+      - name: Unpack boost/eigen bundle
+        run: |
+          tar xf install.tar.gz -C install_boost_eigen
+          rm install.tar.gz
+
+      - name: Merge directories
+        run: cp -r install_boost_eigen/* ${INSTALL_DIR}
+
+      - name: Package merged directory
+        run: tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - name: Upload merged install directory
+        uses: actions/upload-artifact@v4
         with:
           name: deps
           path: |

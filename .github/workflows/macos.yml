@@ -50,7 +50,7 @@ jobs:
             install.tar.gz
 
   # can run in parallel, not needed by anything else
-  build_eigen_boost:
+  build_boost_eigen:
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4

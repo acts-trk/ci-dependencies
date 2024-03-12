@@ -11,7 +11,7 @@ function run() {
 
 
 run brew update
-run brew install ccache xerces-c eigen boost 
+run brew install ccache xerces-c
 run brew reinstall cmake
 
 ec=0

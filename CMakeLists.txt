@@ -15,6 +15,8 @@ set(ROOT_HASH SHA1=8fc49479265ccf493cfe9bb36ab1c1f23967b99a)
 set(PODIO_VERSION 00-17-02)
 set(EDM4HEP_VERSION 00-10-01)
 set(DD4HEP_VERSION 01-27)
+set(BOOST_VERSION 1.84.0)
+set(EIGEN_VERSION 3.4.0)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
@@ -66,7 +68,32 @@ add_custom_command(OUTPUT ${_python_stamp_file}
   DEPENDS python)
 add_custom_target(PythonExeExists DEPENDS ${_python_stamp_file})
             
+ExternalProject_Add(boost
+  PREFIX boost
+  URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz
+  URL_HASH SHA1=75366b414f6d0f34533af9ea43acd58bb886e953
+  CMAKE_ARGS
+  -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
+  -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/boost/${BOOST_VERSION}
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+)
 
+ExternalProject_Add(eigen
+  PREFIX eigen
+  URL https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz
+  URL_HASH SHA1=d222db69a9e87d9006608e029d1039039f360b52
+  CMAKE_ARGS
+  -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
+  -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/eigen/${EIGEN_VERSION}
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+)
+  
 ExternalProject_Add(tbb
   PREFIX tbb
   URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v${TBB_VERSION}.tar.gz

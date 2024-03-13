@@ -460,6 +460,7 @@ jobs:
 
       - name: Unpack full bundle
         run: |
+          mkdir -p ${INSTALL_DIR}
           tar xf install.tar.gz -C ${INSTALL_DIR}
           rm install.tar.gz
 
@@ -470,6 +471,7 @@ jobs:
 
       - name: Unpack boost/eigen bundle
         run: |
+          mkdir -p install_boost_eigen
           tar xf install.tar.gz -C install_boost_eigen
           rm install.tar.gz
 

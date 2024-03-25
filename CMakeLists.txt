@@ -63,7 +63,7 @@ ExternalProject_Add(python
   URL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
   URL_HASH SHA1=459959e7dbeb89931db03457ea1f012353e34bce
   BUILD_IN_SOURCE ON
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=-fPIC" ${python_sdkroot} ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations ${openssl_option}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=-fPIC" ${python_sdkroot} ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations --with-lto --disable-test-modules ${openssl_option}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 

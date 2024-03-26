@@ -39,6 +39,11 @@ jobs:
         run: > 
           cmake --build ${BUILD_DIR} -- python
 
+      - name: Remove .pyc files and tests from install directory
+        run: |
+          find ${INSTALL_DIR} -type f -name *.pyc -delete
+          rm -rf ${INSTALL_DIR}/python/3.12.2/lib/python3.12/test
+
       - name: Package build
         run: |
           tar czf build.tar.gz -C ${BUILD_DIR} .
@@ -449,46 +454,50 @@ jobs:
             # build.tar.gz
             # install.tar.gz
 
-  # make_tarball:
-    # runs-on: ubuntu-latest # we don't need macOS here
-    # needs: 
+  make_tarball:
+    runs-on: ubuntu-latest # we don't need macOS here
+    needs: 
+      - build_python
       # - build_pythia8
       # - build_boost_eigen
     # steps:
-      # - uses: actions/download-artifact@v4
-        # with:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_1
           # name: build_9
-          # path: .
+          path: .
 
-      # - name: Unpack full bundle
-        # run: |
-          # mkdir -p ${INSTALL_DIR}
-          # tar xf install.tar.gz -C ${INSTALL_DIR}
-          # rm install.tar.gz
+      - name: Unpack full bundle
+        run: |
+          mkdir -p ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+          rm install.tar.gz
 
-      # - uses: actions/download-artifact@v4
-        # with:
-          # name: build_boost_eigen
-          # path: .
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_boost_eigen
+          path: .
 
-      # - name: Unpack boost/eigen bundle
-        # run: |
-          # mkdir -p install_boost_eigen
-          # tar xf install.tar.gz -C install_boost_eigen
-          # rm install.tar.gz
+      - name: Unpack boost/eigen bundle
+        run: |
+          mkdir -p install_boost_eigen
+          tar xf install.tar.gz -C install_boost_eigen
+          rm install.tar.gz
 
-      # - name: Merge directories
-        # run: cp -r install_boost_eigen/* ${INSTALL_DIR}
+      - name: Merge directories
+        run: cp -r install_boost_eigen/* ${INSTALL_DIR}
 
-      # - name: Package merged directory
-        # run: tar czf install.tar.gz -C ${INSTALL_DIR} .
+      - name: Package merged directory
+        run: |
+          tar cf - -C ${INSTALL_DIR} . | zstd -o install.tar.zst -19 -T$(nproc)
 
-      # - name: Upload merged install directory
-        # uses: actions/upload-artifact@v4
-        # with:
-          # name: deps
-          # path: |
-            # install.tar.gz
+
+      - name: Upload merged install directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: deps
+          path: |
+            install.tar.zst
 
   # deploy_to_eos:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/master'

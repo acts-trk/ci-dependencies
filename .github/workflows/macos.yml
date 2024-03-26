@@ -460,7 +460,7 @@ jobs:
       - build_python
       # - build_pythia8
       # - build_boost_eigen
-    # steps:
+    steps:
       - uses: actions/download-artifact@v4
         with:
           name: build_1

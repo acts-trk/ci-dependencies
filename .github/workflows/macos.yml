@@ -478,11 +478,11 @@ jobs:
           # name: build_boost_eigen
           # path: .
 
-      - name: Unpack boost/eigen bundle
-        run: |
-          mkdir -p install_boost_eigen
-          tar xf install.tar.gz -C install_boost_eigen
-          rm install.tar.gz
+      # - name: Unpack boost/eigen bundle
+        # run: |
+          # mkdir -p install_boost_eigen
+          # tar xf install.tar.gz -C install_boost_eigen
+          # rm install.tar.gz
 
       - name: Merge directories
         run: cp -r install_boost_eigen/* ${INSTALL_DIR}

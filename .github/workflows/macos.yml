@@ -484,8 +484,8 @@ jobs:
           # tar xf install.tar.gz -C install_boost_eigen
           # rm install.tar.gz
 
-      - name: Merge directories
-        run: cp -r install_boost_eigen/* ${INSTALL_DIR}
+      # - name: Merge directories
+        # run: cp -r install_boost_eigen/* ${INSTALL_DIR}
 
       - name: Package merged directory
         run: |

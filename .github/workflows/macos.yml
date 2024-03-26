@@ -58,7 +58,7 @@ jobs:
 
   # can run in parallel, not needed by anything else
   build_boost_eigen:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
@@ -83,7 +83,7 @@ jobs:
             install.tar.gz
 
   build_tbb:
-    runs-on: macos-13
+    runs-on: macos-14
     needs: [build_python]
     steps:
       - uses: actions/checkout@v4
@@ -128,7 +128,7 @@ jobs:
             install.tar.gz
   
   build_nlohmann_json:
-    runs-on: macos-13
+    runs-on: macos-14
     needs: [build_tbb]
     steps:
       - uses: actions/checkout@v4
@@ -173,7 +173,7 @@ jobs:
             install.tar.gz
 
   build_root:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_nlohmann_json]
 
@@ -220,7 +220,7 @@ jobs:
             install.tar.gz
 
   build_podio_edm4hep:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_root]
 
@@ -267,7 +267,7 @@ jobs:
             install.tar.gz
 
   build_geant4:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_podio_edm4hep]
 
@@ -314,7 +314,7 @@ jobs:
             install.tar.gz
 
   build_dd4hep:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_geant4]
 
@@ -361,7 +361,7 @@ jobs:
             install.tar.gz
 
   build_hepmc3:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_dd4hep]
 
@@ -408,7 +408,7 @@ jobs:
             install.tar.gz
 
   build_pythia8:
-    runs-on: macos-13
+    runs-on: macos-14
 
     needs: [build_hepmc3]
 

@@ -1,4 +1,4 @@
-name: macOS
+name: macOS_cmake
 
 on: [push, pull_request]
 

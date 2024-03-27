@@ -1,0 +1,280 @@
+name: macOS
+
+on:
+  - push
+
+env:
+  XERCESC_VERSION: 3.2.2
+  ROOT_VERSION: 6.20.00
+  GEANT4_VERSION: 10.6.1
+  DD4HEP_VERSION: 01-11-02
+  BOOST_VERSION: 1_72_0
+  
+
+jobs:
+  build_boost:
+    runs-on: macos-10.15
+    steps:
+      - name: Build
+        run: >
+          curl -SL https://dl.bintray.com/boostorg/release/1.72.0/source/boost_${BOOST_VERSION}.tar.gz | tar -xzC .
+          && mv boost_* boost_src && cd boost_src
+          && ./bootstrap.sh 
+          --with-libraries=program_options,test
+          --prefix=../install
+          && ./b2 install
+          && tar cf ../install.tar.gz -C ../install .
+      - uses: actions/upload-artifact@v1
+        with:
+          name: boost
+          path: install.tar.gz
+
+  build_tbb:
+    runs-on: macos-10.15
+    steps:
+      - name: Download
+        run: >
+          curl -SL https://github.com/oneapi-src/oneTBB/releases/download/v2020.2/tbb-2020.2-mac.tgz | tar -xzC .
+          && tar cf install.tar.gz -C tbb .
+      - uses: actions/upload-artifact@v1
+        with:
+          name: tbb
+          path: install.tar.gz
+
+
+  build_xercesc:
+    runs-on: macos-10.15
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
+
+      - name: Build
+        run: >
+          curl -SL https://github.com/apache/xerces-c/archive/v${XERCESC_VERSION}.tar.gz | tar -xzC . 
+          && mv xerces-c-* xerces-c_src
+          && mkdir xerces-c_build && cd xerces-c_build
+          && cmake ../xerces-c_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=../install
+          && make -j2
+          && make install 
+          && tar cf ../install.tar.gz -C ../install .
+      - uses: actions/upload-artifact@v1
+        with:
+          name: xercesc
+          path: install.tar.gz
+
+  build_root:
+    runs-on: macos-10.15
+    needs:
+      - build_tbb
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: tbb
+          path: tbb.tar.gz
+
+      - run: >
+          mkdir deps
+          && ls
+          && ls tbb.tar.gz
+          && tar xf tbb.tar.gz -C deps
+
+      - name: Build
+        run: >
+          curl -SL https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz | tar -xzC . 
+          && mv root-* root_src 
+          && mkdir root_build && cd root_build 
+          && cmake ../root_src 
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_STANDARD=17 
+          -DCMAKE_PREFIX_PATH=../deps
+          -DCMAKE_INSTALL_PREFIX=../install
+          -Dx11=ON 
+          -Dfftw3=ON 
+          -Dgdml=ON 
+          -Dminuit2=ON 
+          -Dopengl=ON 
+          -Droofit=ON 
+          -Dxml=ON 
+          && make -j2
+          && make install 
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: root
+          path: install.tar.gz
+
+  build_geant4:
+    runs-on: macos-10.15
+    needs:
+      - build_xercesc
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: xercesc
+          path: xercesc.tar.gz
+
+      - run: >
+          mkdir deps
+          && tar xf xercesc.tar.gz -C deps
+                        
+      - name: Build Geant4
+        run: >
+          curl -SL https://github.com/Geant4/geant4/archive/v${GEANT4_VERSION}.tar.gz | tar -xzC .
+          && mv geant4-* geant4_src
+          && mkdir geant4_build && cd geant4_build
+          && cmake ../geant4_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DGEANT4_USE_GDML=ON
+          -DGEANT4_BUILD_CXXSTD=17
+          -DCMAKE_PREFIX_PATH=../deps
+          -DCMAKE_INSTALL_PREFIX=../install
+          && make -j2
+          && make install
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: geant4
+          path: install.tar.gz
+
+  build_dd4hep:
+    runs-on: macos-10.15
+    needs:
+      - build_geant4
+      - build_root
+      - build_xercesc
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: xercesc
+          path: xercesc.tar.gz
+      - uses: actions/download-artifact@v1
+        with:
+          name: root
+          path: root.tar.gz
+      - uses: actions/download-artifact@v1
+        with:
+          name: geant4
+          path: geant4.tar.gz
+
+      - run: >
+          mkdir deps
+          && tar xf xercesc.tar.gz -C deps
+          && tar xf root.tar.gz -C deps
+          && tar xf geant4.tar.gz -C deps
+
+      - name: Build DD4hep
+        run: >
+          curl -SL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz | tar -xzC .
+          && mv DD4hep-* dd4hep_src
+          && mkdir dd4hep_build && cd dd4hep_build
+          && cmake ../dd4hep_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DDD4HEP_USE_GEANT4=ON
+          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_PREFIX_PATH=../deps
+          -DCMAKE_INSTALL_PREFIX=../install
+          -DBUILD_DOCS=OFF
+          && make -j2
+          && make install
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: dd4hep
+          path: install.tar.gz
+
+  build_hepmc3:
+    runs-on: macos-10.15
+    needs:
+      - build_root
+    steps:
+      - name: Install dependencies
+        run: brew install cmake
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: root
+          path: root.tar.gz
+
+      - run: >
+          mkdir deps
+          && tar xf root.tar.gz -C deps
+
+      - name: Build
+        run: >
+          curl -SL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/3.2.1/HepMC3-3.2.1.tar.gz | tar -xzC .
+          && mv HepMC* hepmc_src
+          && mkdir hepmc_build && cd hepmc_build
+          && cmake ../hepmc_src
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH=../deps
+          -DCMAKE_INSTALL_PREFIX=../install
+          -DHEPMC3_ENABLE_PYTHON=OFF
+          && make -j2
+          && make install
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: hepmc3
+          path: install.tar.gz
+
+  build_heppdt:
+    runs-on: macos-10.15
+    steps:
+      - name: Build HepPDT
+        run: >
+          curl -SL http://lcgapp.cern.ch/project/simu/HepPDT/download/HepPDT-2.06.01.tar.gz | tar -xzC .
+          && mv HepPDT* heppdt_src
+          && cd heppdt_src
+          && ./configure --prefix=$PWD/../install
+          && make -j2
+          && make install
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: heppdt
+          path: install.tar.gz
+
+  build_pythia8:
+    runs-on: macos-10.15
+    steps:
+      - name: Build
+        run: >
+          curl -SL http://home.thep.lu.se/~torbjorn/pythia8/pythia8244.tgz | tar -xzC .
+          && mv pythia8244 pythia8_src
+          && cd pythia8_src
+          && ./configure --prefix=$PWD/../install
+          && make -j2
+          && make install
+          && tar cf ../install.tar.gz -C ../install .
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: pythia8
+          path: install.tar.gz
+
+
+      # - name: Make tarball
+        # run: cd acts-deps && tar zcvf ../deps.tar.gz .
+
+      # - uses: actions/upload-artifact@v1
+        # with:
+          # name: libs
+          # path: deps.tar.gz
+
+

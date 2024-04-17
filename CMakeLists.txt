@@ -10,8 +10,8 @@ set(GEANT4_VERSION 11.1.3)
 set(HEPMC3_VERSION 3.2.5)
 set(PYTHIA8_VERSION 311)
 set(JSON_VERSION 3.11.2)
-set(ROOT_VERSION 6.30.02)
-set(ROOT_HASH SHA1=8fc49479265ccf493cfe9bb36ab1c1f23967b99a)
+set(ROOT_VERSION 6.30.06)
+set(ROOT_HASH SHA1=dd95462386e27c205fe8e3396daa9c169627fbf1)
 set(PODIO_VERSION 00-17-02)
 set(EDM4HEP_VERSION 00-10-01)
 set(DD4HEP_VERSION 01-27)
@@ -43,10 +43,8 @@ if(APPLE)
   set(openssl_option "--with-openssl=${OPENSSL_DIR}")
 endif()
 
-set(python_sdkroot "")
-if(APPLE)
-  set(python_sdkroot "SDKROOT=${CMAKE_OSX_SYSROOT}")
-endif()
+
+message(STATUS ${CMAKE_OSX_SYSROOT})
 
 # Determine current platform as minimum from SYSROOT
 if(APPLE)
@@ -57,13 +55,21 @@ if(APPLE)
   message(STATUS "Minimal macOS Deployment Target determined to: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()
 
+set(python_sdkroot "")
+set(python_deployment_target "")
+set(python_cflags "-fPIC")
+if(APPLE)
+  set(python_sdkroot "SDKROOT=${CMAKE_OSX_SYSROOT}")
+  set(python_deployment_target "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+endif()
+
 
 ExternalProject_Add(python
   PREFIX python
   URL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
   URL_HASH SHA1=459959e7dbeb89931db03457ea1f012353e34bce
   BUILD_IN_SOURCE ON
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=-fPIC" ${python_sdkroot} ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations --with-lto ${openssl_option}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${python_cflags}" ${python_sdkroot} ${python_deployment_target} ./configure --prefix=${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION} --enable-optimizations --with-lto ${openssl_option}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
@@ -310,7 +316,7 @@ ExternalProject_Add(dd4hep
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/root/${ROOT_VERSION}|${CMAKE_INSTALL_PREFIX}/podio/${PODIO_VERSION}|${CMAKE_INSTALL_PREFIX}/edm4hep/${EDM4HEP_VERSION}|${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}|${CMAKE_INSTALL_PREFIX}/nlohmann_json/${JSON_VERSION}|${CMAKE_INSTALL_PREFIX}/boost/${BOOST_VERSION}
   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=14.2
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   -DPython_EXECUTABLE=${Python_EXECUTABLE}

@@ -88,7 +88,7 @@ add_custom_command(OUTPUT ${_python_stamp_file}
   COMMENT "Checking for Python executable"
   DEPENDS python)
 add_custom_target(PythonExeExists DEPENDS ${_python_stamp_file})
-            
+
 ExternalProject_Add(boost
   PREFIX boost
   URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz
@@ -116,12 +116,12 @@ ExternalProject_Add(eigen
   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
 )
-  
+
 ExternalProject_Add(tbb
   PREFIX tbb
   URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v${TBB_VERSION}.tar.gz
   URL_HASH SHA1=740e86b703f42446ddde392b73a9db3dc0f5f4cd
-  CMAKE_ARGS 
+  CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/tbb/${TBB_VERSION}
@@ -133,11 +133,11 @@ ExternalProject_Add(tbb
   BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
-ExternalProject_Add(geant4 
+ExternalProject_Add(geant4
   PREFIX geant4
   URL https://gitlab.cern.ch/geant4/geant4/-/archive/v${GEANT4_VERSION}/geant4-v${GEANT4_VERSION}.tar.gz
   URL_HASH SHA1=69119e8a29d3bd79b70886dc7ae78e6d008e1753
-  CMAKE_ARGS 
+  CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}
@@ -174,15 +174,16 @@ ExternalProject_Add(hepmc3
 
 # Hard-coding the compile flags is not ideal, but seems needed
 set(pythia_configure  "./configure")
+list(APPEND pythia_configure "--prefix=${CMAKE_INSTALL_PREFIX}/pythia8/${PYTHIA8_VERSION}")
 set(pythia_cxx_common "-O2 -std=c++${CMAKE_CXX_STANDARD} -pedantic -W -Wall -Wshadow -fPIC -pthread")
 if(APPLE)
   list(APPEND pythia_configure "--cxx-common='-isysroot ${CMAKE_OSX_SYSROOT} ${pythia_cxx_common}'")
 else()
-  list(APPEND pythia_configure "${pythia_cxx_common}")
+  list(APPEND pythia_configure "--cxx-common='${pythia_cxx_common}'")
 endif()
 
 ExternalProject_Add(pythia8
-  PREFIX pythia8 
+  PREFIX pythia8
   DEPENDS PythonExeExists
   URL https://pythia.org/download/pythia83/pythia8${PYTHIA8_VERSION}.tgz
   URL_HASH SHA1=3186d9c289914896838f1050610121870854eb36

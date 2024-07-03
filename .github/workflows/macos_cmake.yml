@@ -9,6 +9,8 @@ env:
   CCACHE_DIR: ${{ github.workspace }}/ccache
   CCACHE_MAXSIZE: 10G
 
+  CXX_STANDARD: "20"
+
 jobs:
 
   build_python:
@@ -32,7 +34,12 @@ jobs:
 
 
       - name: Initial configure
-        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_PARALLEL_LEVEL=3
+        run: >
+          cmake -S ${{ github.workspace }} 
+          -B ${{ env.BUILD_DIR }} 
+          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} 
+          -DCMAKE_BUILD_PARALLEL_LEVEL=3
+          -DCMAKE_CXX_STANDARD=${{ env.CXX_STANDARD }}
 
 
       - name: Build
@@ -66,7 +73,12 @@ jobs:
         run: ./dependencies.sh
 
       - name: Initial configure
-        run: cmake -S ${{ github.workspace }} -B ${{ env.BUILD_DIR }} -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DCMAKE_BUILD_PARALLEL_LEVEL=3
+        run: >
+          cmake -S ${{ github.workspace }} 
+          -B ${{ env.BUILD_DIR }} 
+          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} 
+          -DCMAKE_BUILD_PARALLEL_LEVEL=3
+          -DCMAKE_CXX_STANDARD=${{ env.CXX_STANDARD }}
 
       - name: Build
         run: > 

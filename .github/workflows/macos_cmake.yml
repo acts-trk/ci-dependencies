@@ -355,8 +355,26 @@ jobs:
       - run: |
           mkdir ${BUILD_DIR}
           tar xf build.tar.gz -C ${BUILD_DIR}
+          rm build.tar.gz
           mkdir ${INSTALL_DIR}
           tar xf install.tar.gz -C ${INSTALL_DIR}
+          rm install.tar.gz
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_boost_eigen
+          path: .
+
+      - name: Unpack boost/eigen bundle
+        run: |
+          mkdir -p install_boost_eigen
+          tar xf install.tar.gz -C install_boost_eigen
+          rm install.tar.gz
+
+      - name: Merge directories
+        run: |
+          cp -r install_boost_eigen/* ${INSTALL_DIR}
+          rm -rf install_boost_eigen
 
       - name: Build
         run: > 
@@ -482,20 +500,6 @@ jobs:
           mkdir -p ${INSTALL_DIR}
           tar xf install.tar.gz -C ${INSTALL_DIR}
           rm install.tar.gz
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: build_boost_eigen
-          path: .
-
-      - name: Unpack boost/eigen bundle
-        run: |
-          mkdir -p install_boost_eigen
-          tar xf install.tar.gz -C install_boost_eigen
-          rm install.tar.gz
-
-      - name: Merge directories
-        run: cp -r install_boost_eigen/* ${INSTALL_DIR}
 
       - name: Package merged directory
         run: |

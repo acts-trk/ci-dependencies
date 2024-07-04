@@ -2,10 +2,12 @@
 set -e
 set -u
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 function add_dep() {
   pkg=$1
   ver=$2
-  export CMAKE_PREFIX_PATH="@CMAKE_INSTALL_PREFIX@/$pkg/$ver:$CMAKE_PREFIX_PATH"
+  export CMAKE_PREFIX_PATH="$SCRIPT_DIR/$pkg/$ver:$CMAKE_PREFIX_PATH"
 }
 
 add_dep python @PYTHON_VERSION@

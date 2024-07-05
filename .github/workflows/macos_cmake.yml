@@ -521,7 +521,7 @@ jobs:
             install.tar.zst
 
   deploy_to_eos:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest # we don't need macOS here
     needs:
       - make_tarball

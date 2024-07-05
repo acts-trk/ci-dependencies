@@ -86,12 +86,14 @@ jobs:
 
       - name: Package build
         run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
           tar czf install.tar.gz -C ${INSTALL_DIR} .
 
       - uses: actions/upload-artifact@v4
         with:
           name: build_boost_eigen
           path: |
+            build.tar.gz
             install.tar.gz
 
   build_tbb:
@@ -367,14 +369,20 @@ jobs:
 
       - name: Unpack boost/eigen bundle
         run: |
+          ls -al
           mkdir -p install_boost_eigen
           tar xf install.tar.gz -C install_boost_eigen
           rm install.tar.gz
+          mkdir -p build_boost_eigen
+          tar xf build.tar.gz -C build_boost_eigen
+          rm build.tar.gz
 
       - name: Merge directories
         run: |
           cp -r install_boost_eigen/* ${INSTALL_DIR}
           rm -rf install_boost_eigen
+          cp -r build_boost_eigen/boost ${BUILD_DIR}
+          rm -rf build_boost_eigen
 
       - name: Build
         run: > 

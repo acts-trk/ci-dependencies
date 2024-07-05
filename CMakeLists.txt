@@ -63,11 +63,11 @@ macro(install_hint)
   cmake_parse_arguments(IHINT "${options}" "${oneValueArgs}"
                         "${multiValueArgs}" ${ARGN})
   if(APPLE)
-    message(FATAL_ERROR "Install like:\n> brew install ${OSPKG_MACOS}")
+    message(FATAL_ERROR "Install like:\n> brew install ${IHINT_MACOS}")
   elseif(${OS_NAME} STREQUAL "ubuntu")
-    message(FATAL_ERROR "Install like:\n> sudo apt-get install -y ${OSPKG_UBUNTU}")
-  elseif(${OS_NAME} STREQUAL "aLMAlINUX")
-    message(FATAL_ERROR "Install like:\n> sudo apt-get install -y ${OSPKG_UBUNTU}")
+    message(FATAL_ERROR "Install like:\n> sudo apt-get install -y ${IHINT_UBUNTU}")
+  elseif(${OS_NAME} STREQUAL "almalinux")
+    message(FATAL_ERROR "Install like:\n> sudo dnf install -y ${IHINT_ALMA}")
   endif()
 endmacro()
 
@@ -117,7 +117,7 @@ check_os_package(NAME EXPAT
 check_os_package(NAME XercesC
                  MACOS xerces-c
                  UBUNTU libxerces-c-dev
-                 ALMA xerces-c-devel)
+                 ALMA "epel-release xerces-c-devel")
 
 check_os_package(PROGRAM
                  NAME rsync
@@ -149,6 +149,34 @@ if(NOT X11_Xpm_FOUND)
   install_hint(MACOS libxpm UBUNTU libxpm-dev ALMA libXpm-devel)
 endif()
 
+if(NOT X11_Xft_FOUND)
+  install_hint(MACOS libxft UBUNTU libxft-dev ALMA libXft-devel)
+endif()
+
+if(NOT X11_Xext_FOUND)
+  install_hint(MACOS libxext UBUNTU libxext-dev ALMA libXext-devel)
+endif()
+
+check_os_package(NAME OpenGL
+                 MACOS this-should-already-exist
+                 UBUNTU libglu1-mesa-dev
+                 ALMA "mesa-libGL-devel mesa-libGLU-devel")
+
+if(NOT OPENGL_GLU_FOUND)
+  install_hint(MACOS glu
+               UBUNTU libglu1-mesa-dev
+               ALMA mesa-libGLU-devel)
+endif()
+
+check_os_package(NAME LibXml2
+                 MACOS LibXml2
+                 UBUNTU libxml2-dev
+                 ALMA libxml2-devel)
+
+check_os_package(PROGRAM NAME git
+                 MACOS git
+                 UBUNTU git
+                 ALMA git)
 
 set(openssl_option "")
 if(APPLE)
@@ -325,6 +353,10 @@ ExternalProject_Add(nlohmann_json
   BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
+
+# the builtin vdt build requires a python to be on path: we happen to have one ready
+set(root_vdt_path "${CMAKE_INSTALL_PREFIX}/python/${PYTHON_VERSION}/bin:$ENV{PATH}")
+
 ExternalProject_Add(root
   PREFIX root
   DEPENDS nlohmann_json PythonExeExists tbb
@@ -368,7 +400,7 @@ ExternalProject_Add(root
   -Dbuiltin_vdt=ON
   -Dxrootd=OFF
   -Dtmva=OFF
-  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
+  BUILD_COMMAND ${CMAKE_COMMAND} -E env PATH=${root_vdt_path} CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 

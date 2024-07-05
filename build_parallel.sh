@@ -17,7 +17,6 @@ if [ $(uname) == "Linux" ]; then
     os="ubuntu"
   elif [[ $os_name == *"AlmaLinux"* ]]; then
     os="almalinux"
-    exit 1
   fi
 elif [ $(uname) == "Darwin" ]; then
   os_name="$(sw_vers -productName) $(sw_vers -productVersion)"
@@ -33,11 +32,14 @@ script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 build_dir=${1:-$PWD/build}
 install_dir=${2:-$PWD/install}
 
+build_dir=$(realpath $build_dir)
+install_dir=$(realpath $install_dir)
+
 echo "Build directory: ${build_dir}"
 echo "Install directory: ${install_dir}"
 
 
-cmake_loc=$(which cmake)
+cmake_loc=$(command -v cmake)
 
 if [ -z "$cmake_loc" ]; then
   echo "CMake not found in PATH, install like:"
@@ -88,25 +90,25 @@ cmake -S ${script_dir} -B ${build_dir} \
 cmake --build ${build_dir}
 exit 
 
-cmake --build ${build_dir} --target python > ${script_dir}/python.log 2>&1 &
+cmake --build ${build_dir} --target python > ${build_dir}/python.log 2>&1 &
 python_pid=$!
 
 cmake --build ${build_dir} --target boost eigen tbb geant4 hepmc3 nlohmann_json 
 
 echo "Waiting for python to finish:"
-tail -f ${script_dir}/python.log &
+tail -f ${build_dir}/python.log &
 tail_pid=$!
 wait $python_pid
 kill $tail_pid
 wait $tail_pid
 
-cmake --build ${build_dir} --target pythia8 > ${script_dir}/pythia8.log 2>&1 &
+cmake --build ${build_dir} --target pythia8 > ${build_dir}/pythia8.log 2>&1 &
 pythia8_pid=$!
 
 cmake --build ${build_dir} --target root podio edm4hep dd4hep
 
 echo "Waiting for pythia8 to finish:"
-tail -f ${script_dir}/pythia8.log &
+tail -f ${build_dir}/pythia8.log &
 tail_pid=$!
 wait $pythia8_pid
 kill $tail_pid

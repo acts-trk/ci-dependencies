@@ -144,11 +144,11 @@ cmake --build ${build_dir} --target boost eigen tbb geant4 hepmc3 nlohmann_json
 echo "Waiting for python to finish:"
 tail -f ${build_dir}/python.log &
 tail_pid=$!
-echo $python_pid
 wait $python_pid
 echo "Python is ready"
 kill $tail_pid || true
 
+cmake --build ${build_dir} --target pythia8 > ${build_dir}/pythia8.log 2>&1 &
 pythia8_pid=$!
 
 cmake --build ${build_dir} --target root podio edm4hep dd4hep

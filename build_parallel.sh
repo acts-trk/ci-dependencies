@@ -168,3 +168,5 @@ kill $tail_pid || true > /dev/null 2>&1
 
 echo "Rerun combined build to ensure all dependencies are built"
 cmake --build ${build_dir}
+
+heading "Build complete"

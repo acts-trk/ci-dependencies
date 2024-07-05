@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 project(ActsDependencies)
 
 include(ExternalProject)
+include(FetchContent)
 include(GNUInstallDirs)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(PYTHON_VERSION 3.12.2)
 set(TBB_VERSION 2021.11.0)
@@ -32,19 +34,130 @@ if(NOT CMAKE_BUILD_PARALLEL_LEVEL)
   set(CMAKE_BUILD_PARALLEL_LEVEL 1)
 endif()
 
-# Packages required to build a working python version
-find_package(OpenSSL REQUIRED)
-find_package(Curses REQUIRED)
+
+if(APPLE)
+  set(OS_NAME "macos")
+else()
+  execute_process(
+    COMMAND bash "-c" "cat /etc/os-release | grep -e \"^PRETTY_NAME=\" | sed 's/PRETTY_NAME=\"\\(.*\\)\"/\\1/g'"
+    OUTPUT_VARIABLE OS_NAME_PRETTY
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  message(STATUS "OS: ${OS_NAME_PRETTY}")
+
+
+  if(${OS_NAME_PRETTY} MATCHES "AlmaLinux")
+    set(OS_NAME "almalinux")
+  elseif(${OS_NAME_PRETTY} MATCHES "Ubuntu")
+    set(OS_NAME "ubuntu")
+  else()
+    message(FATAL_ERROR "Unsupported OS: ${OS_NAME_PRETTY}")
+  endif()
+endif()
+
+macro(install_hint)
+  set(options "")
+  set(oneValueArgs MACOS UBUNTU ALMA)
+  set(multiValueArgs "")
+  cmake_parse_arguments(IHINT "${options}" "${oneValueArgs}"
+                        "${multiValueArgs}" ${ARGN})
+  if(APPLE)
+    message(FATAL_ERROR "Install like:\n> brew install ${OSPKG_MACOS}")
+  elseif(${OS_NAME} STREQUAL "ubuntu")
+    message(FATAL_ERROR "Install like:\n> sudo apt-get install -y ${OSPKG_UBUNTU}")
+  elseif(${OS_NAME} STREQUAL "aLMAlINUX")
+    message(FATAL_ERROR "Install like:\n> sudo apt-get install -y ${OSPKG_UBUNTU}")
+  endif()
+endmacro()
+
+macro(check_os_package)
+  set(options PROGRAM)
+  set(oneValueArgs NAME MACOS UBUNTU ALMA)
+  set(multiValueArgs "")
+  cmake_parse_arguments(OSPKG "${options}" "${oneValueArgs}"
+                        "${multiValueArgs}" ${ARGN})
+
+  message(CHECK_START "Checking for ${OSPKG_NAME}")
+  if(${OSPKG_PROGRAM})
+    find_program(${OSPKG_NAME}_exe ${OSPKG_NAME} NO_CACHE QUIET)
+  else()
+    find_package(${OSPKG_NAME} QUIET)
+  endif()
+
+  if("${${OSPKG_NAME}_FOUND}" OR (${OSPKG_PROGRAM} AND (NOT ${OSPKG_NAME}_exe STREQUAL "${OSPKG_NAME}_exe-NOTFOUND")))
+    message(CHECK_PASS "found")
+  else()
+    message(CHECK_FAIL "not found")
+    install_hint(MACOS ${OSPKG_MACOS} UBUNTU ${OSPKG_UBUNTU} ALMA ${OSPKG_ALMA})
+  endif()
+endmacro()
+
+check_os_package(NAME OpenSSL
+                 MACOS openssl@3
+                 UBUNTU libssl-dev
+                 ALMA openssl-devel)
+
+check_os_package(NAME ZLIB
+                 MACOS zlib
+                 UBUNTU zlib1g-dev
+                 ALMA zlib-devel)
+
+
+check_os_package(NAME Curses
+                 MACOS ncurses
+                 UBUNTU libncurses5-dev
+                 ALMA ncurses-devel)
+
+check_os_package(NAME EXPAT
+                 MACOS expat
+                 UBUNTU libexpat-dev
+                 ALMA expat-devel)
+
+check_os_package(NAME XercesC
+                 MACOS xerces-c
+                 UBUNTU libxerces-c-dev
+                 ALMA xerces-c-devel)
+
+check_os_package(PROGRAM
+                 NAME rsync
+                 MACOS rsync
+                 UBUNTU rsync
+                 ALMA rsync)
+
+check_os_package(NAME Freetype
+                 MACOS freetype
+                 UBUNTU libfreetype-dev
+                 ALMA freetype-devel)
+
+check_os_package(NAME LibLZMA
+                 MACOS xz # not sure about the name
+                 UBUNTU liblzma-dev
+                 ALMA lzma-devel)
+
+check_os_package(NAME LZ4
+                 MACOS lz4
+                 UBUNTU liblz4-dev
+                 ALMA lz4-devel)
+
+check_os_package(NAME X11
+                 MACOS libx11
+                 UBUNTU libx11-dev
+                 ALMA libX11-devel)
+
+if(NOT X11_Xpm_FOUND)
+  install_hint(MACOS libxpm UBUNTU libxpm-dev ALMA libXpm-devel)
+endif()
+
 
 set(openssl_option "")
 if(APPLE)
   execute_process(COMMAND brew --prefix openssl
                   OUTPUT_VARIABLE OPENSSL_DIR)
   set(openssl_option "--with-openssl=${OPENSSL_DIR}")
+  message(STATUS "Sysroot: ${CMAKE_OSX_SYSROOT}")
 endif()
 
-
-message(STATUS ${CMAKE_OSX_SYSROOT})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.sh.in ${CMAKE_INSTALL_PREFIX}/setup.sh @ONLY)
 
@@ -96,6 +209,7 @@ ExternalProject_Add(boost
   URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz
   URL_HASH SHA1=75366b414f6d0f34533af9ea43acd58bb886e953
   CMAKE_ARGS
+  -DBUILD_SHARED_LIBS=ON
   -DBoost_VERBOSE=ON
   # Revisit in boost 1.86.0 ish with BOOST_NUMERIC_ODEINT_NO_ADAPTORS
   -DBOOST_EXCLUDE_LIBRARIES=numeric/odeint
@@ -106,6 +220,7 @@ ExternalProject_Add(boost
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 ExternalProject_Add(eigen
@@ -194,7 +309,7 @@ ExternalProject_Add(pythia8
   URL_HASH SHA1=3186d9c289914896838f1050610121870854eb36
   BUILD_IN_SOURCE ON
   PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/pythia8-forward-decl.patch
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CXX=${CMAKE_CXX_COMPILER} ${pythia_configure}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CXX=${CMAKE_CXX_COMPILER} CC=${CMAKE_C_COMPILER} ${pythia_configure}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
@@ -207,6 +322,7 @@ ExternalProject_Add(nlohmann_json
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/nlohmann_json/${JSON_VERSION}
+  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 ExternalProject_Add(root
@@ -219,7 +335,6 @@ ExternalProject_Add(root
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/root/${ROOT_VERSION}
-  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/nlohmann_json/${JSON_VERSION}|${CMAKE_INSTALL_PREFIX}/tbb/${TBB_VERSION}
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
@@ -262,6 +377,7 @@ ExternalProject_Add(podio
   DEPENDS root PythonExeExists
   URL https://github.com/AIDASoft/podio/archive/refs/tags/v${PODIO_VERSION}.tar.gz
   URL_HASH SHA1=600b99000f0c7a6c25c04a8b32bebf70413c9f57
+  CMAKE_GENERATOR ${sub_generator}
   LIST_SEPARATOR |
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
@@ -274,7 +390,6 @@ ExternalProject_Add(podio
   -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/root/${ROOT_VERSION}|${CMAKE_INSTALL_PREFIX}/nlohmann_json/${JSON_VERSION}
   -DBUILD_TESTING=OFF
   -DUSE_EXTERNAL_CATCH2=OFF
-  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 set(venv_dir ${CMAKE_CURRENT_BINARY_DIR}/venv)
@@ -292,6 +407,7 @@ ExternalProject_Add(edm4hep
   DEPENDS podio PythonVenv
   URL https://github.com/key4hep/EDM4hep/archive/refs/tags/v${EDM4HEP_VERSION}.tar.gz
   URL_HASH SHA1=7781f6c85bd2e88480b699a3a554182fd8bb75bf
+  CMAKE_GENERATOR ${sub_generator}
   LIST_SEPARATOR |
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
@@ -304,17 +420,16 @@ ExternalProject_Add(edm4hep
   -DPython_EXECUTABLE=${venv_python_exe}
   -DBUILD_TESTING=OFF
   -DUSE_EXTERNAL_CATCH2=OFF
-  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 ExternalProject_Add(dd4hep
   PREFIX dd4hep
-  DEPENDS edm4hep geant4 PythonExeExists boost
+  DEPENDS edm4hep geant4 PythonExeExists boost nlohmann_json
   URL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz
   URL_HASH SHA1=3e8a1d07a72689a24db04466b263094bbe16240f
   LIST_SEPARATOR |
   PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/dd4hep-python.patch
-  BUILD_COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}/lib CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
+  BUILD_COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}/lib CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND}  --build <BINARY_DIR>
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}/lib  ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -333,4 +448,25 @@ ExternalProject_Add(dd4hep
   -DDD4HEP_USE_EDM4HEP=ON
 )
 
+option(BUILD_ACTS "Build ACTS" OFF)
 
+if(BUILD_ACTS)
+  message(STATUS "Building ACTS")
+  ExternalProject_Add(acts
+    PREFIX acts
+    DEPENDS root podio edm4hep geant4 nlohmann_json boost dd4hep tbb eigen pythia8 hepmc3 PythonVenv
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/acts
+    LIST_SEPARATOR |
+    CMAKE_GENERATOR Ninja
+    CMAKE_ARGS
+    -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
+    -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/acts
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}/root/${ROOT_VERSION}|${CMAKE_INSTALL_PREFIX}/podio/${PODIO_VERSION}|${CMAKE_INSTALL_PREFIX}/edm4hep/${EDM4HEP_VERSION}|${CMAKE_INSTALL_PREFIX}/geant4/${GEANT4_VERSION}|${CMAKE_INSTALL_PREFIX}/nlohmann_json/${JSON_VERSION}|${CMAKE_INSTALL_PREFIX}/boost/${BOOST_VERSION}|${CMAKE_INSTALL_PREFIX}/dd4hep/${DD4HEP_VERSION}|${CMAKE_INSTALL_PREFIX}/tbb/${TBB_VERSION}|${CMAKE_INSTALL_PREFIX}/eigen/${EIGEN_VERSION}|${CMAKE_INSTALL_PREFIX}/pythia8/${PYTHIA8_VERSION}|${CMAKE_INSTALL_PREFIX}/hepmc3/${HEPMC3_VERSION}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DPython_EXECUTABLE=${venv_python_exe}
+    # ACTS args
+    -DACTS_BUILD_EVERYTHING=ON
+  )
+endif()

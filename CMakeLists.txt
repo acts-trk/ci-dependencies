@@ -174,7 +174,7 @@ if(NOT OPENGL_GLU_FOUND)
 endif()
 
 check_os_package(NAME LibXml2
-                 MACOS LibXml2
+                 MACOS libxml2
                  UBUNTU libxml2-dev
                  ALMA libxml2-devel)
 

@@ -64,7 +64,9 @@ function printDependencyOneliner {
   elif [ $os == "almalinux" ]; then
     echo "> ${SUDO}dnf group install -y \"Development Tools\" && ${SUDO}dnf install -y epel-release && ${SUDO}dnf install -y cmake  openssl-devel zlib-devel ncurses-devel expat-devel xerces-c-devel rsync freetype-devel xz-devel lz4-devel libX11-devel libXpm-devel libXft-devel libXext-devel mesa-libGLU-devel libxml2-devel git libzstd-devel"
   else
-    echo "> brew install cmake xerces-c lz4 xz xrootd lzma freetype"
+    echo "> Install homebrew from https://brew.sh"
+    echo "> xcode-select --install"
+    echo "> brew install cmake openssl@3 zlib zstd ncurses expat xerces-c rsync freetype xz lz4 libx11 libxml2 git"
   fi
 
   fill_line

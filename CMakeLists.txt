@@ -103,6 +103,11 @@ check_os_package(NAME ZLIB
                  UBUNTU zlib1g-dev
                  ALMA zlib-devel)
 
+check_os_package(NAME ZSTD
+                 MACOS zstd
+                 UBUNTU libzstd-dev
+                 ALMA libzstd-devel)
+
 
 check_os_package(NAME Curses
                  MACOS ncurses
@@ -133,7 +138,7 @@ check_os_package(NAME Freetype
 check_os_package(NAME LibLZMA
                  MACOS xz # not sure about the name
                  UBUNTU liblzma-dev
-                 ALMA lzma-devel)
+                 ALMA xz-devel)
 
 check_os_package(NAME LZ4
                  MACOS lz4

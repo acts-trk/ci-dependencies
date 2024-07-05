@@ -1,6 +1,25 @@
 #!/bin/bash
 set -u
 
+columns=$(stty size | cut -d ' ' -f2)
+function fill_line() {
+    sep=${1:-=}
+    printf "=%.0s" $(seq 1 "$columns") | tr "=" "$sep"
+    echo ""
+}
+ 
+function print_center() {
+    text="$1"
+    printf "%*s\n" $(((${#text}+$columns)/2)) "$text"
+}
+
+function heading() {
+    fill_line
+    print_center "$1"
+    fill_line
+}
+
+
 cat << EOF
     _      ____  _____  ____  
    / \    / ___||_   _|/ ___| 
@@ -8,6 +27,7 @@ cat << EOF
  / ___ \ | |___   | |   ___) |
 /_/   \_\ \____|  |_|  |____/ 
 EOF
+fill_line
 
 echo "This script will build the ACTS framework and its dependencies."
 
@@ -27,6 +47,32 @@ else
 fi
 echo "OS: ${os_name}"
 
+if [ $(whoami) == "root" ]; then
+  SUDO=""
+else
+  SUDO="sudo "
+fi
+
+function printDependencyOneliner {
+
+
+  heading "Missing dependencies"
+
+  echo "If you're having problems with missing dependencies, try this one-liner:"
+  if [ $os == "ubuntu" ]; then
+    echo "> ${SUDO}apt-get install -y cmake build-essential libssl-dev zlib1g-dev libncurses5-dev libexpat-dev libxerces-c-dev rsync libfreetype-dev liblzma-dev liblz4-dev libx11-dev libxpm-dev libxft-dev libxext-dev libglu1-mesa-dev libxml2-dev git libzstd-dev"
+  elif [ $os == "almalinux" ]; then
+    echo "> ${SUDO}dnf group install -y \"Development Tools\" && ${SUDO}dnf install -y epel-release && ${SUDO}dnf install -y cmake  openssl-devel zlib-devel ncurses-devel expat-devel xerces-c-devel rsync freetype-devel xz-devel lz4-devel libX11-devel libXpm-devel libXft-devel libXext-devel mesa-libGLU-devel libxml2-devel git libzstd-devel"
+  else
+    echo "> brew install cmake xerces-c lz4 xz xrootd lzma freetype"
+  fi
+
+  fill_line
+
+}
+
+trap printDependencyOneliner ERR
+
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 build_dir=${1:-$PWD/build}
@@ -38,15 +84,17 @@ install_dir=$(realpath $install_dir)
 echo "Build directory: ${build_dir}"
 echo "Install directory: ${install_dir}"
 
+fill_line "-"
+
 
 cmake_loc=$(command -v cmake)
 
 if [ -z "$cmake_loc" ]; then
   echo "CMake not found in PATH, install like:"
   if [ $os == "ubuntu" ]; then
-    echo "> sudo apt-get install -y cmake"
+    echo "> ${SUDO}apt-get install -y cmake"
   elif [ $os == "almalinux" ]; then
-    echo "> sudo dnf install -y cmake"
+    echo "> ${SUDO}dnf install -y cmake"
   elif [ $os == "macos" ]; then
     echo "> brew install cmake"
   fi
@@ -59,9 +107,9 @@ if [ $(uname) == "Linux" ]; then
   if [ -z "$cxx_loc" ]; then
     echo "g++ not found in PATH, install like:"
     if [ $os == "ubuntu" ]; then
-      echo "> sudo apt-get install -y build-essential"
+      echo "> ${SUDO}apt-get install -y build-essential"
     elif [ $os == "almalinux" ]; then
-      echo "> sudo dnf group install -y \"Development Tools\""
+      echo "> ${SUDO}dnf group install -y \"Development Tools\""
     fi
     echo "Exiting."
     exit 1
@@ -87,8 +135,6 @@ cmake -S ${script_dir} -B ${build_dir} \
   -DCMAKE_INSTALL_PREFIX=${install_dir} \
   -DCMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
 
-cmake --build ${build_dir}
-exit 
 
 cmake --build ${build_dir} --target python > ${build_dir}/python.log 2>&1 &
 python_pid=$!
@@ -98,11 +144,11 @@ cmake --build ${build_dir} --target boost eigen tbb geant4 hepmc3 nlohmann_json
 echo "Waiting for python to finish:"
 tail -f ${build_dir}/python.log &
 tail_pid=$!
+echo $python_pid
 wait $python_pid
-kill $tail_pid
-wait $tail_pid
+echo "Python is ready"
+kill $tail_pid || true
 
-cmake --build ${build_dir} --target pythia8 > ${build_dir}/pythia8.log 2>&1 &
 pythia8_pid=$!
 
 cmake --build ${build_dir} --target root podio edm4hep dd4hep
@@ -111,8 +157,9 @@ echo "Waiting for pythia8 to finish:"
 tail -f ${build_dir}/pythia8.log &
 tail_pid=$!
 wait $pythia8_pid
-kill $tail_pid
-wait $tail_pid
+echo "Pythia8 is ready"
+kill $tail_pid || true
+
 
 echo "Rerun combined build to ensure all dependencies are built"
 cmake --build ${build_dir}

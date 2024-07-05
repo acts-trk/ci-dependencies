@@ -1,0 +1,4 @@
+[submodule "acts"]
+	path = acts
+	url = ../acts.git
+	branch = main

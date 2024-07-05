@@ -151,7 +151,8 @@ tail -f ${build_dir}/python.log &
 tail_pid=$!
 wait $python_pid
 echo "Python is ready"
-kill $tail_pid || true > /dev/null 2>&1
+kill $tail_pid
+wait $tail_pid 2> /dev/null || true
 
 cmake --build ${build_dir} --target pythia8 > ${build_dir}/pythia8.log 2>&1 &
 pythia8_pid=$!
@@ -163,7 +164,8 @@ tail -f ${build_dir}/pythia8.log &
 tail_pid=$!
 wait $pythia8_pid
 echo "Pythia8 is ready"
-kill $tail_pid || true > /dev/null 2>&1
+kill $tail_pid
+wait $tail_pid 2> /dev/null || true
 
 
 echo "Rerun combined build to ensure all dependencies are built"

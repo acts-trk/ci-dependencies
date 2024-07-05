@@ -78,14 +78,10 @@ script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 build_dir=${1:-$PWD/build}
 install_dir=${2:-$PWD/install}
 
-build_dir=$(realpath $build_dir)
-install_dir=$(realpath $install_dir)
-
 echo "Build directory: ${build_dir}"
 echo "Install directory: ${install_dir}"
 
 fill_line "-"
-
 
 cmake_loc=$(command -v cmake)
 
@@ -114,14 +110,24 @@ if [ $(uname) == "Linux" ]; then
     echo "Exiting."
     exit 1
   fi
+  PROC=$(nproc)
 else
-  clang_loc=$(which clang++)
+  clang_loc=$(command -v clang++)
   if [ -z "$clang_loc" ]; then
     echo "clang++ not found in PATH, install like:"
     echo "> xcode-select --install"
     echo "Exiting."
     exit 1
   fi
+
+  brew_loc=$(command -v brew)
+  if [ -z "$brew_loc" ]; then
+    echo "brew not found in PATH, you probably want it for later"
+    echo "Install from: https://brew.sh"
+    echo "Exiting."
+    exit 1
+  fi
+  PROC=$(sysctl -n hw.physicalcpu)
 fi
 
 set -e
@@ -133,8 +139,7 @@ cmake -S ${script_dir} -B ${build_dir} \
   -DCMAKE_C_COMPILER=gcc \
   -DCMAKE_CXX_STANDARD=20 \
   -DCMAKE_INSTALL_PREFIX=${install_dir} \
-  -DCMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
-
+  -DCMAKE_BUILD_PARALLEL_LEVEL=$PROC
 
 cmake --build ${build_dir} --target python > ${build_dir}/python.log 2>&1 &
 python_pid=$!
@@ -146,7 +151,7 @@ tail -f ${build_dir}/python.log &
 tail_pid=$!
 wait $python_pid
 echo "Python is ready"
-kill $tail_pid || true
+kill $tail_pid || true > /dev/null 2>&1
 
 cmake --build ${build_dir} --target pythia8 > ${build_dir}/pythia8.log 2>&1 &
 pythia8_pid=$!
@@ -158,7 +163,7 @@ tail -f ${build_dir}/pythia8.log &
 tail_pid=$!
 wait $pythia8_pid
 echo "Pythia8 is ready"
-kill $tail_pid || true
+kill $tail_pid || true > /dev/null 2>&1
 
 
 echo "Rerun combined build to ensure all dependencies are built"

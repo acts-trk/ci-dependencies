@@ -480,7 +480,7 @@ jobs:
 
       - name: Build
         run: > 
-          cmake --build ${BUILD_DIR} -- hepmc3
+          cmake --build ${BUILD_DIR} -- pythia8
 
       - name: Package build
         run: |

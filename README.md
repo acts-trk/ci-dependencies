@@ -10,6 +10,11 @@ git clone --recursive git@github.com:acts-project/ci-dependencies.git
 ```
 
 You can then run the main build script, where you can supply a custom build and install directory.
+
+```bash
+./build.sh [BUILD_DIR] [INSTALL_DIR] # both arguments are optional
+```
+
 The build script will build ACTS (which you checked out as a submodule with the command above).
 The source code is found in `$REPOSITORY/acts`, and can be modified.
 

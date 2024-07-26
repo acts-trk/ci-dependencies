@@ -1,6 +1,11 @@
 name: macOS_cmake
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 env:
   BUILD_DIR: ${{ github.workspace }}/build

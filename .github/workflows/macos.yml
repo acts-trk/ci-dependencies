@@ -1,6 +1,11 @@
 name: macOS
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 env:
   SRC_DIR: ${{ github.workspace }}/src

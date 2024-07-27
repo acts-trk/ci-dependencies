@@ -191,8 +191,6 @@ if(APPLE)
 endif()
 
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.sh.in ${CMAKE_INSTALL_PREFIX}/setup.sh @ONLY)
-
 # Determine current platform as minimum from SYSROOT
 if(APPLE)
   execute_process(COMMAND jq -r .MinimalDisplayName ${CMAKE_OSX_SYSROOT}/SDKSettings.json

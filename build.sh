@@ -60,13 +60,13 @@ function printDependencyOneliner {
 
   echo "If you're having problems with missing dependencies, try this one-liner:"
   if [ $os == "ubuntu" ]; then
-    echo "> ${SUDO}apt-get install -y cmake build-essential libssl-dev zlib1g-dev libncurses5-dev libexpat-dev libxerces-c-dev rsync libfreetype-dev liblzma-dev liblz4-dev libx11-dev libxpm-dev libxft-dev libxext-dev libglu1-mesa-dev libxml2-dev git libzstd-dev"
+    echo "> ${SUDO}apt-get install -y cmake build-essential libssl-dev zlib1g-dev libncurses5-dev libexpat-dev libxerces-c-dev rsync libfreetype-dev liblzma-dev liblz4-dev libx11-dev libxpm-dev libxft-dev libxext-dev libglu1-mesa-dev libxml2-dev git libzstd-dev jq"
   elif [ $os == "almalinux" ]; then
-    echo "> ${SUDO}dnf group install -y \"Development Tools\" && ${SUDO}dnf install -y epel-release && ${SUDO}dnf install -y cmake  openssl-devel zlib-devel ncurses-devel expat-devel xerces-c-devel rsync freetype-devel xz-devel lz4-devel libX11-devel libXpm-devel libXft-devel libXext-devel mesa-libGLU-devel libxml2-devel git libzstd-devel"
+    echo "> ${SUDO}dnf group install -y \"Development Tools\" && ${SUDO}dnf install -y epel-release && ${SUDO}dnf install -y cmake  openssl-devel zlib-devel ncurses-devel expat-devel xerces-c-devel rsync freetype-devel xz-devel lz4-devel libX11-devel libXpm-devel libXft-devel libXext-devel mesa-libGLU-devel libxml2-devel git libzstd-devel jq"
   else
     echo "> Install homebrew from https://brew.sh"
     echo "> xcode-select --install"
-    echo "> brew install cmake openssl@3 zlib zstd ncurses expat xerces-c rsync freetype xz lz4 libx11 libxml2 git"
+    echo "> brew install cmake openssl@3 zlib zstd ncurses expat xerces-c rsync freetype xz lz4 libx11 libxml2 git jq"
   fi
 
   fill_line

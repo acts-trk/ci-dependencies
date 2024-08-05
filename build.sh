@@ -66,7 +66,7 @@ function printDependencyOneliner {
   else
     echo "> Install homebrew from https://brew.sh"
     echo "> xcode-select --install"
-    echo "> brew install cmake openssl@3 zlib zstd ncurses expat xerces-c rsync freetype xz lz4 libx11 libxml2 git"
+    echo "> brew install cmake openssl@3 zlib zstd ncurses expat xerces-c rsync freetype xz lz4 libx11 libxml2 git jq"
   fi
 
   fill_line

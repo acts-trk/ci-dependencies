@@ -335,7 +335,9 @@ jobs:
   build_geomodel:
     runs-on: macos-14
 
-    needs: [build_geant4]
+    needs: 
+      - build_geant4
+      - build_boost_eigen
 
     steps:
       - uses: actions/checkout@v4
@@ -355,55 +357,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build_6
-          path: .
-
-      - run: |
-          mkdir ${BUILD_DIR}
-          tar xf build.tar.gz -C ${BUILD_DIR}
-          mkdir ${INSTALL_DIR}
-          tar xf install.tar.gz -C ${INSTALL_DIR}
-
-      - name: Build
-        run: > 
-          cmake --build ${BUILD_DIR} -- geomodel
-
-      - name: Package build
-        run: |
-          tar czf build.tar.gz -C ${BUILD_DIR} .
-          tar czf install.tar.gz -C ${INSTALL_DIR} .
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build_7
-          path: |
-            build.tar.gz
-            install.tar.gz
-
-  build_dd4hep:
-    runs-on: macos-14
-
-    needs: 
-      - build_geomodel
-      - build_boost_eigen
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: ./dependencies.sh
-
-      - name: Cache build
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-${{ github.job }}-dd4hep
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ github.job }}-dd4hep
-            ccache-${{ runner.os }}-${{ github.job }}-
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: build_7
           path: .
 
       - run: |
@@ -435,6 +388,48 @@ jobs:
           rm -rf install_boost_eigen
           cp -r build_boost_eigen/boost ${BUILD_DIR}
           rm -rf build_boost_eigen
+
+      - name: Build
+        run: > 
+          cmake --build ${BUILD_DIR} -- geomodel
+
+      - name: Package build
+        run: |
+          tar czf build.tar.gz -C ${BUILD_DIR} .
+          tar czf install.tar.gz -C ${INSTALL_DIR} .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build_7
+          path: |
+            build.tar.gz
+            install.tar.gz
+
+  build_dd4hep:
+    runs-on: macos-14
+
+    needs: 
+      - build_geomodel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./dependencies.sh
+
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ github.job }}-dd4hep
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ github.job }}-dd4hep
+            ccache-${{ runner.os }}-${{ github.job }}-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build_7
+          path: .
 
       - name: Build
         run: > 

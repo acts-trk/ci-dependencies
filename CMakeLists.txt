@@ -359,7 +359,7 @@ ExternalProject_Add(nlohmann_json
 
 ExternalProject_Add(geomodel
   PREFIX geomodel
-  DEPENDS nlohmann_json geant4
+  DEPENDS nlohmann_json geant4 eigen
   URL https://gitlab.cern.ch/GeoModelDev/GeoModel/-/archive/${GEOMODEL_VERSION}/GeoModel-${GEOMODEL_VERSION}.tar.gz
   URL_HASH SHA1=6e0fa7eaf6502b34f82d008cddeb7b05ec0ebc63
   CMAKE_ARGS

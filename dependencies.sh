@@ -14,6 +14,26 @@ echo "OS: ${os_name}"
 
 if [ $os == "ubuntu" ]; then
   echo "Installing dependencies for Ubuntu"
+  apt-get install -y \
+    cmake \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libncurses5-dev \
+    libexpat-dev \
+    libxerces-c-dev \
+    rsync \
+    libfreetype-dev \
+    liblzma-dev \
+    liblz4-dev \
+    libx11-dev \
+    libxpm-dev \
+    libxft-dev \
+    libxext-dev \
+    libglu1-mesa-dev \
+    libxml2-dev \
+    git \
+    libzstd-dev
 elif [ $os == "macos" ]; then
   echo "Installing dependencies for macOS"
   run brew update

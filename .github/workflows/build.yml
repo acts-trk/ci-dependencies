@@ -19,5 +19,5 @@ jobs:
           - ubuntu-2404
     uses: ./.github/workflows/common.yml
     with:
-      os: ${{ matrix.version }}
+      os: ${{ matrix.os }}
     secrets: inherit

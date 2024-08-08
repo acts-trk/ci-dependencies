@@ -32,8 +32,6 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ runner.os }}-${{ github.job }}
 
-      - run: ls -al /Applications/Xcode_15.0.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
-
       - name: Initial configure
         run: >
           cmake -S ${{ github.workspace }} 

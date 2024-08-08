@@ -33,11 +33,12 @@ if [ $os == "ubuntu" ]; then
     libglu1-mesa-dev \
     libxml2-dev \
     git \
-    libzstd-dev
+    libzstd-dev \
+    libsqlite3-dev
 elif [ $os == "macos" ]; then
   echo "Installing dependencies for macOS"
   run brew update
-  run brew install ccache openssl@3 zlib zstd ncurses expat xerces-c freetype xz lz4 libx11 libxml2 libxpm libxft
+  run brew install ccache openssl@3 zlib zstd ncurses expat xerces-c freetype xz lz4 libx11 libxml2 libxpm libxft jq sqlite
   run brew reinstall cmake
 
   brew unlink r || true

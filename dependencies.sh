@@ -14,7 +14,7 @@ echo "OS: ${os_name}"
 
 if [ $os == "ubuntu" ]; then
   echo "Installing dependencies for Ubuntu"
-  apt-get install -y \
+  sudo apt-get install -y \
     cmake \
     build-essential \
     libssl-dev \

@@ -31,20 +31,9 @@ fill_line
 
 echo "This script will build the ACTS framework and its dependencies."
 
-if [ $(uname) == "Linux" ]; then
-  os_name=$(cat /etc/os-release | grep -e "^PRETTY_NAME=" | sed 's/PRETTY_NAME="\(.*\)"/\1/g')
-  if [[ $os_name == *"Ubuntu"* ]]; then
-    os="ubuntu"
-  elif [[ $os_name == *"AlmaLinux"* ]]; then
-    os="almalinux"
-  fi
-elif [ $(uname) == "Darwin" ]; then
-  os_name="$(sw_vers -productName) $(sw_vers -productVersion)"
-  os="macos"
-else
-  echo "Only Ubuntu, AlmaLinux and macOS are supported. Exiting."
-  exit 1
-fi
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source ${script_dir}/detect_os.sh
 echo "OS: ${os_name}"
 
 if [ $(whoami) == "root" ]; then
@@ -75,7 +64,12 @@ function printDependencyOneliner {
 
 trap printDependencyOneliner ERR
 
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+function interruptHandler {
+  kill -TERM -$$
+}
+
+trap interruptHandler INT
+
 
 build_dir=${1:-$PWD/build}
 install_dir=${2:-$PWD/install}
@@ -132,10 +126,33 @@ else
   PROC=$(sysctl -n hw.physicalcpu)
 fi
 
+build_acts=ON
+if [ ! -d "${script_dir}/acts" ]; then
+  echo "No ACTS directory found, do you want me to clone the upstream repository?"
+  # ask user for input
+  read -p "Clone ACTS repository? [y/n] " -n 1 -r
+  echo ""
+  echo "Ok!"
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    read -p "SSH or HTTPS? [s/h] " -n 1 -r
+    if [[ $REPLY =~ ^[Ss]$ ]]; then
+      url="git@github.com:acts-project/acts.git"
+    else
+      url=https://github.com/acts-project/acts.git
+    fi
+    echo ""
+    echo "Cloning ACTS from ${url} to ${script_dir}/acts"
+    git clone ${url} ${script_dir}/acts
+  else
+    echo "Not cloning ACTS, turning off the ACTS build"
+    build_acts=OFF
+  fi
+fi
+
 set -e
 
 cmake -S ${script_dir} -B ${build_dir} \
-  -DBUILD_ACTS=ON \
+  -DBUILD_ACTS=${build_acts} \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=g++ \
   -DCMAKE_C_COMPILER=gcc \

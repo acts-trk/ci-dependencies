@@ -431,6 +431,12 @@ jobs:
           name: build_7
           path: .
 
+      - run: |
+          mkdir ${BUILD_DIR}
+          tar xf build.tar.gz -C ${BUILD_DIR}
+          mkdir ${INSTALL_DIR}
+          tar xf install.tar.gz -C ${INSTALL_DIR}
+
       - name: Build
         run: > 
           cmake --build ${BUILD_DIR} -- dd4hep

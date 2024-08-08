@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: install
+          name: install_${{ inputs.os }}
           path: |
             install.tar.gz
 
@@ -82,7 +82,7 @@ jobs:
       - name: Upload merged install directory
         uses: actions/upload-artifact@v4
         with:
-          name: deps
+          name: deps_${{ inputs.os }}
           path: |
             install.tar.zst
 
@@ -103,7 +103,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: deps
+          name: deps_${{ inputs.os }}
           path: .
 
       - name: Upload

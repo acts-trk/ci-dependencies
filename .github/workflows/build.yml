@@ -1,0 +1,23 @@
+name: Builds
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+
+jobs:
+  build_matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-14
+          - ubuntu-22.04
+          - ubuntu-24.04
+    uses: ./.github/workflows/common.yml
+    with:
+      os: ${{ matrix.os }}
+    secrets: inherit

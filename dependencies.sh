@@ -14,6 +14,7 @@ echo "OS: ${os_name}"
 
 if [ $os == "ubuntu" ]; then
   echo "Installing dependencies for Ubuntu"
+  sudo apt-get update
   sudo apt-get install -y \
     cmake \
     build-essential \

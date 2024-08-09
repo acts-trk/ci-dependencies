@@ -115,5 +115,5 @@ jobs:
           echo $name
           echo $sha
           mv install.tar.zst $name
-          scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/cmake
-          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/cmake/deps.latest.tar.zst
+          scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/$name
+          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/deps.latest.tar.zst

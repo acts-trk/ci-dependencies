@@ -117,3 +117,11 @@ jobs:
           mv install.tar.zst $name
           scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/$name
           ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/deps.latest.tar.zst
+
+      - name: Symlink tag
+        if: startsWith(github.event.ref, 'refs/tags/v')
+        run: |
+          echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
+          sha=$(echo $GITHUB_SHA | head -c 7)
+          name=deps.$sha.tar.zst
+          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/deps.${{ github.ref_name }}.tar.zst

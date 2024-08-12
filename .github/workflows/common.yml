@@ -87,7 +87,7 @@ jobs:
             install.tar.zst
 
   deploy_to_eos:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.event.ref, 'refs/tags/v')
     runs-on: ubuntu-latest # we don't need macOS here
     needs:
       - make_tarball

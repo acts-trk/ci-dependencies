@@ -28,6 +28,5 @@ jobs:
     uses: ./.github/workflows/common.yml
     with:
       os: ubuntu-24.04
-      build_acts: "ON"
       suffix: "_min"
     secrets: inherit

@@ -6,6 +6,13 @@ on:
       os:
         required: true
         type: string
+      build_acts:
+        type: string
+        default: "OFF"
+      suffix:
+        type: string
+        default: ""
+        
 
 env:
   BUILD_DIR: ${{ github.workspace }}/build
@@ -35,7 +42,8 @@ jobs:
       - name: Initial configure
         run: >
           cmake -S ${{ github.workspace }} 
-          -B ${{ env.BUILD_DIR }} 
+          -B ${{ env.BUILD_DIR }}  --preset default
+          -DBUILD_ACTS=${{ inputs.build_acts }}
           -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} 
           -DCMAKE_BUILD_PARALLEL_LEVEL=3
           -DCMAKE_CXX_STANDARD=${{ env.CXX_STANDARD }}
@@ -77,7 +85,7 @@ jobs:
 
       - name: Package merged directory
         run: |
-          tar cf - -C ${INSTALL_DIR} . | zstd -o install.tar.zst -19 -T$(nproc)
+          tar cf - -C ${INSTALL_DIR} . | zstd -o install.tar.zst -10 -T$(nproc)
 
       - name: Upload merged install directory
         uses: actions/upload-artifact@v4
@@ -115,8 +123,8 @@ jobs:
           echo $name
           echo $sha
           mv install.tar.zst $name
-          scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/$name
-          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/deps.latest.tar.zst
+          scp -F ssh_config $name $DEPLOY_USER@lxplus.cern.ch:/eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}${{ inputs.suffix }}/$name
+          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}${{ inputs.suffix }}/deps.latest.tar.zst
 
       - name: Symlink tag
         if: startsWith(github.event.ref, 'refs/tags/v')
@@ -124,4 +132,4 @@ jobs:
           echo "$DEPLOY_PWD" | kinit $DEPLOY_USER@CERN.CH 2>&1 >/dev/null
           sha=$(echo $GITHUB_SHA | head -c 7)
           name=deps.$sha.tar.zst
-          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}/deps.${{ github.ref_name }}.tar.zst
+          ssh -F ssh_config $DEPLOY_USER@lxplus.cern.ch ln -f -s $name /eos/user/a/atsjenkins/www/ACTS/ci/${{ inputs.os }}${{ inputs.suffix }}/deps.${{ github.ref_name }}.tar.zst

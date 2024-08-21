@@ -64,7 +64,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: install_${{ inputs.os }}
+          name: install_${{ inputs.os }}${{ inputs.suffix }}
           path: |
             install.tar.gz
 
@@ -74,7 +74,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: install_${{ inputs.os }}
+          name: install_${{ inputs.os }}${{ inputs.suffix }}
           path: .
 
       - name: Unpack full bundle
@@ -90,7 +90,7 @@ jobs:
       - name: Upload merged install directory
         uses: actions/upload-artifact@v4
         with:
-          name: deps_${{ inputs.os }}
+          name: deps_${{ inputs.os }}${{ inputs.suffix }}
           path: |
             install.tar.zst
 
@@ -112,7 +112,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: deps_${{ inputs.os }}
+          name: deps_${{ inputs.os }}${{ inputs.suffix }}
           path: .
 
       - name: Upload

@@ -58,7 +58,7 @@ else()
 
   set(DD4HEP_VERSION 01-29)
   set(DD4HEP_HASH SHA256=435d25a7ef093d8bf660f288b5a89b98556b4c1c293c55b93bf641fb4cba77e9)
-  set(DD4HEP_PATCH "PATCH_COMMAND;patch;-p1;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/dd4hep-python.patch;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/0001-CMake-allow-finding-newer-versions-of-podio.patch")
+  set(DD4HEP_PATCH "PATCH_COMMAND;patch;-p1;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/dd4hep-python.patch;&&;patch;-p1;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/0001-CMake-allow-finding-newer-versions-of-podio.patch")
   set(BOOST_VERSION 1.86.0)
   set(BOOST_URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz)
   set(BOOST_HASH SHA256=2c5ec5edcdff47ff55e27ed9560b0a0b94b07bd07ed9928b476150e16b0efc57)

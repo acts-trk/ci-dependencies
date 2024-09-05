@@ -194,7 +194,8 @@ endif()
 
 # Determine current platform as minimum from SYSROOT
 if(APPLE)
-  execute_process(COMMAND jq -r .MinimalDisplayName ${CMAKE_OSX_SYSROOT}/SDKSettings.json
+  find_program(jq_exe jq REQUIRED)
+  execute_process(COMMAND ${jq_exe} -r .MinimalDisplayName ${CMAKE_OSX_SYSROOT}/SDKSettings.json
                   COMMAND_ERROR_IS_FATAL ANY
                   OUTPUT_VARIABLE CMAKE_OSX_DEPLOYMENT_TARGET
                   OUTPUT_STRIP_TRAILING_WHITESPACE)

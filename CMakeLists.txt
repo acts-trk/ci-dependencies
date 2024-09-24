@@ -1,24 +1,78 @@
 cmake_minimum_required(VERSION 3.20)
 project(ActsDependencies)
 
+option(USE_MINIMUM_VERSIONS "Use minimum versions for dependencies" OFF)
+option(BUILD_ACTS "Build ACTS" OFF)
+option(USE_SYSTEM_PYTHON "Do not build python but use the system installation" OFF)
+
 include(ExternalProject)
 include(GNUInstallDirs)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+
+if(USE_MINIMUM_VERSIONS)
+  set(GEANT4_VERSION 11.0.0)
+  set(GEANT4_HASH SHA256=04d11d4d9041507e7f86f48eb45c36430f2b6544a74c0ccaff632ac51d9644f1)
+
+  set(HEPMC3_VERSION 3.2.1)
+  set(HEPMC3_HASH SHA256=6e4e4bb5708af105d4bf74efc2745e6efe704e942d46a8042f7dcae37a4739fe)
+
+  set(PYTHIA8_VERSION 310)
+  set(PYTHIA8_HASH SHA256=90c811abe7a3d2ffdbf9b4aeab51cf6e0a5a8befb4e3efa806f3d5b9c311e227)
+
+  set(ROOT_VERSION 6.28.06)
+  set(ROOT_HASH SHA256=af3b673b9aca393a5c9ae1bf86eab2672aaf1841b658c5c6e7a30ab93c586533)
+
+  set(PODIO_VERSION 00-16-06)
+  set(PODIO_HASH SHA256=859f7cd16bd2b833bee9c1f33eb4cdbc2a0c2b1a48a853f67c30e8a0301d16df)
+  set(PODIO_PATCH "")
+
+  set(EDM4HEP_VERSION 00-10)
+  set(EDM4HEP_HASH SHA256=a95c917c19793cfad6b0959854a653c5ce698c965598cabd649d544da07712c0)
+
+  set(DD4HEP_VERSION 01-26)
+  set(DD4HEP_HASH SHA256=de2cc8d8e99217e23fdf0a55b879d3fd3a864690d6660e7808f1ff99eb47f384)
+
+  set(BOOST_VERSION 1.81.0)
+  set(BOOST_URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.xz)
+  set(BOOST_HASH SHA256=06bc525a392650eb6248f40a13f40112b6c485eec7103b6dcde7196f2a3570e0)
+else()
+  set(GEANT4_VERSION 11.2.2)
+  set(GEANT4_HASH SHA256=3a8d98c63fc52578f6ebf166d7dffaec36256a186d57f2520c39790367700c8d)
+
+  set(HEPMC3_VERSION 3.3.0)
+  set(HEPMC3_HASH SHA256=6f876091edcf7ee6d0c0db04e080056e89efc1a61abe62355d97ce8e735769d6)
+
+  set(PYTHIA8_VERSION 312)
+  set(PYTHIA8_HASH SHA256=bad98e2967b687046c4568c9091d630a0c31b628745c021a994aba4d1d50f8ea)
+
+  set(ROOT_VERSION 6.32.04)
+  set(ROOT_HASH SHA256=132f126aae7d30efbccd7dcd991b7ada1890ae57980ef300c16421f9d4d07ea8)
+
+  set(PODIO_VERSION 01-00-01)
+  set(PODIO_HASH SHA256=915531a2bcf638011bb6cc19715bbc46d846ec8b985555a1afdcd6abc017e21b)
+  set(PODIO_PATCH "")
+
+  set(EDM4HEP_VERSION 00-10-05)
+  set(EDM4HEP_HASH SHA256=003c8e0c8e1d1844592d43d41384f4320586fbfa51d4d728ae0870b9c4f78d81)
+
+  set(DD4HEP_VERSION 01-29)
+  set(DD4HEP_HASH SHA256=435d25a7ef093d8bf660f288b5a89b98556b4c1c293c55b93bf641fb4cba77e9)
+  set(DD4HEP_PATCH "PATCH_COMMAND;patch;-p1;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/dd4hep-python.patch;&&;patch;-p1;-i;${CMAKE_CURRENT_SOURCE_DIR}/patches/0001-CMake-allow-finding-newer-versions-of-podio.patch")
+  set(BOOST_VERSION 1.86.0)
+  set(BOOST_URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz)
+  set(BOOST_HASH SHA256=2c5ec5edcdff47ff55e27ed9560b0a0b94b07bd07ed9928b476150e16b0efc57)
+endif()
 set(PYTHON_VERSION 3.12.2)
-set(TBB_VERSION 2021.11.0)
-set(GEANT4_VERSION 11.1.3)
-set(HEPMC3_VERSION 3.2.5)
-set(PYTHIA8_VERSION 311)
-set(JSON_VERSION 3.11.2)
-set(ROOT_VERSION 6.30.06)
-set(ROOT_HASH SHA1=dd95462386e27c205fe8e3396daa9c169627fbf1)
-set(PODIO_VERSION 00-17-02)
-set(EDM4HEP_VERSION 00-10-01)
-set(DD4HEP_VERSION 01-29)
-set(BOOST_VERSION 1.84.0)
+set(PYTHON_HASH SHA256=a7c4f6a9dc423d8c328003254ab0c9338b83037bd787d680826a5bf84308116e)
+set(TBB_VERSION 2021.13.0)
+set(TBB_HASH SHA256=3ad5dd08954b39d113dc5b3f8a8dc6dc1fd5250032b7c491eb07aed5c94133e1)
 set(EIGEN_VERSION 3.4.0)
+set(EIGEN_HASH SHA256=8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72)
 set(GEOMODEL_VERSION 6.3.0)
+set(GEOMODEL_HASH SHA256=9c646393763284bca414d39812fd8b578fe73ac6ea1c2cad34a64313f04289d1)
+set(JSON_VERSION 3.11.3)
+set(JSON_HASH SHA256=0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
@@ -211,35 +265,54 @@ if(APPLE)
 endif()
 
 
-ExternalProject_Add(python
+if(USE_SYSTEM_PYTHON)
+  message(STATUS "Using SYSTEM python installation")
+
+  find_package(Python REQUIRED Development Interpreter)
+  
+  if ("${Python3_EXECUTABLE}" STREQUAL "" AND NOT "${Python_EXECUTABLE}" STREQUAL "")
+    set(Python3_EXECUTABLE ${Python_EXECUTABLE})
+  endif()
+
+  if("${Python_EXECUTABLE}" STREQUAL "" AND NOT "${Python3_EXECUTABLE}" STREQUAL "")
+    set(Python_EXECUTABLE ${Python3_EXECUTABLE})
+  endif()
+
+
+  add_custom_target(PythonExeExists)
+else()
+
+  ExternalProject_Add(python
   PREFIX python
   URL https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz
-  URL_HASH SHA1=459959e7dbeb89931db03457ea1f012353e34bce
+  URL_HASH ${PYTHON_HASH}
   BUILD_IN_SOURCE ON
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${python_cflags}" ${python_sdkroot} ${python_deployment_target} ./configure --prefix=${CMAKE_INSTALL_PREFIX} --enable-optimizations --with-lto ${openssl_option}
   BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
 )
 
-string(REGEX MATCH "^([0-9]+\\.[0-9]+)\\.[0-9]+$" _temp ${PYTHON_VERSION})
-set(PYTHON_VERSION_MAJOR_MINOR ${CMAKE_MATCH_1})
+  string(REGEX MATCH "^([0-9]+\\.[0-9]+)\\.[0-9]+$" _temp ${PYTHON_VERSION})
+  set(PYTHON_VERSION_MAJOR_MINOR ${CMAKE_MATCH_1})
 
-# We're guessing / expecting this file to be there when it's needed
-set(Python_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/bin/python${PYTHON_VERSION_MAJOR_MINOR}")
-set(_python_stamp_file "${CMAKE_CURRENT_BINARY_DIR}/python_exe_exists.stamp")
+  # We're guessing / expecting this file to be there when it's needed
+  set(Python_EXECUTABLE "${CMAKE_INSTALL_PREFIX}/bin/python${PYTHON_VERSION_MAJOR_MINOR}")
+
+  set(_python_stamp_file "${CMAKE_CURRENT_BINARY_DIR}/python_exe_exists.stamp")
+  add_custom_command(OUTPUT ${_python_stamp_file}
+    COMMAND ${CMAKE_COMMAND} -E env sh -c "( test -e ${Python_EXECUTABLE} && touch ${_python_stamp_file} ) || ( echo 'Python executable not found at ${Python_EXECUTABLE}!' && exit 1 )"
+    VERBATIM
+    COMMENT "Checking for Python executable"
+    DEPENDS python)
+  add_custom_target(PythonExeExists DEPENDS ${_python_stamp_file})
+endif()
 
 message(STATUS "Python executable: ${Python_EXECUTABLE}")
 
-add_custom_command(OUTPUT ${_python_stamp_file}
-  COMMAND ${CMAKE_COMMAND} -E env sh -c "( test -e ${Python_EXECUTABLE} && touch ${_python_stamp_file} ) || ( echo 'Python executable not found at ${Python_EXECUTABLE}!' && exit 1 )"
-  VERBATIM
-  COMMENT "Checking for Python executable"
-  DEPENDS python)
-add_custom_target(PythonExeExists DEPENDS ${_python_stamp_file})
 
 ExternalProject_Add(boost
   PREFIX boost
-  URL https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}.tar.gz
-  URL_HASH SHA1=75366b414f6d0f34533af9ea43acd58bb886e953
+  URL ${BOOST_URL}
+  URL_HASH ${BOOST_HASH}
   CMAKE_ARGS
   -DBUILD_SHARED_LIBS=ON
   -DBoost_VERBOSE=ON
@@ -258,7 +331,7 @@ ExternalProject_Add(boost
 ExternalProject_Add(eigen
   PREFIX eigen
   URL https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VERSION}/eigen-${EIGEN_VERSION}.tar.gz
-  URL_HASH SHA1=d222db69a9e87d9006608e029d1039039f360b52
+  URL_HASH ${EIGEN_HASH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -272,7 +345,7 @@ ExternalProject_Add(eigen
 ExternalProject_Add(tbb
   PREFIX tbb
   URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v${TBB_VERSION}.tar.gz
-  URL_HASH SHA1=740e86b703f42446ddde392b73a9db3dc0f5f4cd
+  URL_HASH ${TBB_HASH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -288,7 +361,7 @@ ExternalProject_Add(tbb
 ExternalProject_Add(geant4
   PREFIX geant4
   URL https://gitlab.cern.ch/geant4/geant4/-/archive/v${GEANT4_VERSION}/geant4-v${GEANT4_VERSION}.tar.gz
-  URL_HASH SHA1=69119e8a29d3bd79b70886dc7ae78e6d008e1753
+  URL_HASH ${GEANT4_HASH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -309,7 +382,7 @@ ExternalProject_Add(geant4
 ExternalProject_Add(hepmc3
   PREFIX hepmc3
   URL https://gitlab.cern.ch/hepmc/HepMC3/-/archive/${HEPMC3_VERSION}/HepMC3-${HEPMC3_VERSION}.tar.gz
-  URL_HASH SHA1=d4c12f5d50a507cd60cf2377286cbd23f59f1f84
+  URL_HASH ${HEPMC3_HASH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
@@ -339,7 +412,7 @@ ExternalProject_Add(pythia8
   PREFIX pythia8
   DEPENDS PythonExeExists
   URL https://pythia.org/download/pythia83/pythia8${PYTHIA8_VERSION}.tgz
-  URL_HASH SHA1=3186d9c289914896838f1050610121870854eb36
+  URL_HASH ${PYTHIA8_HASH}
   BUILD_IN_SOURCE ON
   PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/pythia8-forward-decl.patch
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env CXX=${CMAKE_CXX_COMPILER} CC=${CMAKE_C_COMPILER} ${pythia_configure}
@@ -349,7 +422,7 @@ ExternalProject_Add(pythia8
 ExternalProject_Add(nlohmann_json
   PREFIX nlohmann_json
   URL https://github.com/nlohmann/json/archive/refs/tags/v${JSON_VERSION}.tar.gz
-  URL_HASH SHA1=1b0701dc7fdc068aad8ce68fc3e019a038232437
+  URL_HASH ${JSON_HASH}
   CMAKE_ARGS
   -DJSON_BuildTests=OFF
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
@@ -362,7 +435,7 @@ ExternalProject_Add(geomodel
   PREFIX geomodel
   DEPENDS nlohmann_json geant4 eigen
   URL https://gitlab.cern.ch/GeoModelDev/GeoModel/-/archive/${GEOMODEL_VERSION}/GeoModel-${GEOMODEL_VERSION}.tar.gz
-  URL_HASH SHA1=6e0fa7eaf6502b34f82d008cddeb7b05ec0ebc63
+  URL_HASH ${GEOMODEL_HASH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -406,21 +479,21 @@ ExternalProject_Add(root
   -Dpythia6=OFF
   -Dpythia8=OFF
   -Dfftw3=OFF
-  -Dbuiltin_tbb=OFF
+  -Dgfal=OFF
+  -Ddavix=OFF
+  -Dxrootd=OFF
+  -Dtmva=OFF
   -Dbuiltin_cfitsio=ON
   -Dbuiltin_xxhash=ON
   -Dbuiltin_afterimage=ON
-  -Dbuiltin_openssl=OFF
   -Dbuiltin_ftgl=ON
   -Dbuiltin_gsl=ON
   -Dbuiltin_gl2ps=ON
   -Dbuiltin_glew=ON
   -Dbuiltin_pcre=ON
-  -Dgfal=OFF
-  -Ddavix=OFF
+  -Dbuiltin_tbb=OFF
+  -Dbuiltin_openssl=OFF
   -Dbuiltin_vdt=ON
-  -Dxrootd=OFF
-  -Dtmva=OFF
   BUILD_COMMAND ${CMAKE_COMMAND} -E env PATH=${root_vdt_path} CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
@@ -429,8 +502,8 @@ ExternalProject_Add(podio
   PREFIX podio
   DEPENDS root PythonExeExists
   URL https://github.com/AIDASoft/podio/archive/refs/tags/v${PODIO_VERSION}.tar.gz
-  URL_HASH SHA1=600b99000f0c7a6c25c04a8b32bebf70413c9f57
-  LIST_SEPARATOR |
+  URL_HASH ${PODIO_HASH}
+  ${PODIO_PATCH}
   CMAKE_ARGS
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
@@ -439,6 +512,7 @@ ExternalProject_Add(podio
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   -DPython_EXECUTABLE=${Python_EXECUTABLE}
+  -DPython3_EXECUTABLE=${Python_EXECUTABLE}
   -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}
   -DBUILD_TESTING=OFF
   -DUSE_EXTERNAL_CATCH2=OFF
@@ -459,29 +533,30 @@ ExternalProject_Add(edm4hep
   PREFIX edm4hep
   DEPENDS podio PythonVenv
   URL https://github.com/key4hep/EDM4hep/archive/refs/tags/v${EDM4HEP_VERSION}.tar.gz
-  URL_HASH SHA1=7781f6c85bd2e88480b699a3a554182fd8bb75bf
+  URL_HASH ${EDM4HEP_HASH}
   LIST_SEPARATOR |
-  CMAKE_ARGS
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_INSTALL_PREFIX}/lib
+  ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
   -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -DCMAKE_PREFIX_PATH=${CMAKE_INSTALL_PREFIX}
   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
   -DPython_EXECUTABLE=${venv_python_exe}
   -DBUILD_TESTING=OFF
   -DUSE_EXTERNAL_CATCH2=OFF
-  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND} --build <BINARY_DIR>
+  BUILD_COMMAND ${CMAKE_COMMAND} -E env CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}
+    ${CMAKE_COMMAND} --build <BINARY_DIR>
 )
 
 ExternalProject_Add(dd4hep
   PREFIX dd4hep
   DEPENDS edm4hep geant4 PythonExeExists boost nlohmann_json
   URL https://github.com/AIDASoft/DD4hep/archive/v${DD4HEP_VERSION}.tar.gz
-  URL_HASH SHA256=435d25a7ef093d8bf660f288b5a89b98556b4c1c293c55b93bf641fb4cba77e9
+  URL_HASH ${DD4HEP_HASH}
   LIST_SEPARATOR |
-  PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/dd4hep-python.patch
+  ${DD4HEP_PATCH}
   BUILD_COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR} CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL} ${CMAKE_COMMAND}  --build <BINARY_DIR>
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
   -DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}
@@ -501,7 +576,6 @@ ExternalProject_Add(dd4hep
   -DDD4HEP_USE_EDM4HEP=ON
 )
 
-option(BUILD_ACTS "Build ACTS" OFF)
 
 if(BUILD_ACTS)
   message(STATUS "Building ACTS")

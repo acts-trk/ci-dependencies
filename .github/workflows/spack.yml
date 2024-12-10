@@ -2,7 +2,7 @@ name: Build dependencies
 
 on:
   workflow_call:
-    inputs: 
+    inputs:
       os:
         required: true
         type: string

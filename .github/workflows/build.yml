@@ -35,7 +35,7 @@ jobs:
         os:
          - ubuntu-22.04
          - ubuntu-24.04
-    uses: ./.github/workflows/common.yml
+    uses: ./.github/workflows/spack.yml
     with:
       os: ${{ matrix.os }}
     secrets: inherit
@@ -46,8 +46,21 @@ jobs:
       matrix:
         image:
           - ghcr.io/acts-project/alma9-base:67
-    uses: ./.github/workflows/common.yml
+    uses: ./.github/workflows/spack.yml
     with:
       os: ubuntu-latest
       image: ${{ matrix.image }}
+    secrets: inherit
+
+  build_cmake:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-14
+          - ubuntu-22.04
+          - ubuntu-24.04
+    uses: ./.github/workflows/cmake.yml
+    with:
+      os: ${{ matrix.os }}
     secrets: inherit

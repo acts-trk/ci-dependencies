@@ -77,7 +77,7 @@ jobs:
 
       - name: Package merged directory
         run: |
-          tar cf - -C "${INSTALL_DIR}" . | zstd -o install.tar.zst -19 -T "$(nproc)"
+          tar cf - -C "${INSTALL_DIR}" . | zstd -o install.tar.zst -19 -T"$(nproc)"
 
       - name: Upload merged install directory
         uses: actions/upload-artifact@v4

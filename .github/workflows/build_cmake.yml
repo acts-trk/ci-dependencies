@@ -1,17 +1,14 @@
-name: Builds
+name: CMake build
 
 on:
   push:
-    branches:
-      - main
     tags:
       - v*
-  pull_request:
   workflow_dispatch:
 
 
 jobs:
-  build_matrix:
+  build_cmake:
     strategy:
       fail-fast: false
       matrix:
@@ -19,7 +16,7 @@ jobs:
           - macos-14
           - ubuntu-22.04
           - ubuntu-24.04
-    uses: ./.github/workflows/common.yml
+    uses: ./.github/workflows/cmake.yml
     with:
       os: ${{ matrix.os }}
     secrets: inherit

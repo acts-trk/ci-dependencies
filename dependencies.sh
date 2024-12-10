@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-function run() { 
+function run() {
   set -x
-  "$@" 
+  "$@"
   { set +x;   } 2> /dev/null
 }
 

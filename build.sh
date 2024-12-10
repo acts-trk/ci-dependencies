@@ -7,7 +7,7 @@ function fill_line() {
     printf "=%.0s" $(seq 1 "$columns") | tr "=" "$sep"
     echo ""
 }
- 
+
 function print_center() {
     text="$1"
     printf "%*s\n" $(((${#text}+$columns)/2)) "$text"
@@ -21,11 +21,11 @@ function heading() {
 
 
 cat << EOF
-    _      ____  _____  ____  
-   / \    / ___||_   _|/ ___| 
-  / _ \  | |      | |  \___ \ 
+    _      ____  _____  ____
+   / \    / ___||_   _|/ ___|
+  / _ \  | |      | |  \___ \
  / ___ \ | |___   | |   ___) |
-/_/   \_\ \____|  |_|  |____/ 
+/_/   \_\ \____|  |_|  |____/
 EOF
 fill_line
 
@@ -163,7 +163,7 @@ cmake -S ${script_dir} -B ${build_dir} \
 cmake --build ${build_dir} --target python > ${build_dir}/python.log 2>&1 &
 python_pid=$!
 
-cmake --build ${build_dir} --target boost eigen tbb geant4 hepmc3 nlohmann_json 
+cmake --build ${build_dir} --target boost eigen tbb geant4 hepmc3 nlohmann_json
 
 echo "Waiting for python to finish:"
 tail -f ${build_dir}/python.log &

@@ -93,9 +93,9 @@ jobs:
           echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
       - name: Push packages and update index
+        if: "(github.ref == 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()"
         env:
           GH_OCI_USER: "${{ github.actor }}"
           GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache
-        if: ${{ !cancelled() }}

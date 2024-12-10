@@ -22,7 +22,7 @@ jobs:
            xcode: "16.0.0"
          - os: macos-15
            xcode: "16.0.0"
-    uses: ./.github/workflows/common.yml
+    uses: ./.github/workflows/spack.yml
     with:
       os: ${{ matrix.os }}
       xcode: ${{ matrix.xcode }}

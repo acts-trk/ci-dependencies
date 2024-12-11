@@ -94,8 +94,16 @@ jobs:
 
       - name: Copy spack.lock to target-triplet
         run: |
-          echo "TARGET_TRIPLET=$(spack arch --family)" >> "$GITHUB_ENV"
-          cp spack.lock spack-"$(spack arch --family)".lock
+          TARGET_TRIPLET=""
+          TARGET_TRIPLET="$(spack arch --family)"
+
+          OS="${{ inputs.os }}"
+          if [[ "${OS}" == macos* ]]; then
+            TARGET_TRIPLET="${TARGET_TRIPLET}-xcode${{ inputs.xcode }}"
+          fi
+
+          echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
+          cp spack.lock "spack-${TARGET_TRIPLET}.lock"
 
 
       - name: Upload spack.lock
@@ -106,7 +114,7 @@ jobs:
           if-no-files-found: error
 
       - name: Push packages and update index
-        if: "(github.ref == 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()"
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()
         env:
           GH_OCI_USER: "${{ github.actor }}"
           GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

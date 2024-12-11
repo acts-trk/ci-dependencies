@@ -92,6 +92,19 @@ jobs:
           echo "BASE IMAGE: ${BASE_IMAGE}"
           echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
+      - name: Get target-triplet from spack
+        run: |
+          echo "TARGET_TRIPLET=$(spack arch --family)" >> "$GITHUB_ENV"
+          cp spack.lock spack-${{ env.TARGET_TRIPLET }}.lock
+
+
+      - name: Upload spack.lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: spack-${{ env.TARGET_TRIPLET }}.lock
+          path: spack-${{ env.TARGET_TRIPLET }}.lock
+          if-no-files-found: error
+
       - name: Push packages and update index
         if: "(github.ref == 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()"
         env:

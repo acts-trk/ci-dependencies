@@ -92,10 +92,10 @@ jobs:
           echo "BASE IMAGE: ${BASE_IMAGE}"
           echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
-      - name: Get target-triplet from spack
+      - name: Copy spack.lock to target-triplet
         run: |
           echo "TARGET_TRIPLET=$(spack arch --family)" >> "$GITHUB_ENV"
-          cp spack.lock spack-${{ env.TARGET_TRIPLET }}.lock
+          cp spack.lock spack-"$(spack arch --family)".lock
 
 
       - name: Upload spack.lock

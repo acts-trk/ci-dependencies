@@ -97,7 +97,8 @@ jobs:
           TARGET_TRIPLET=""
           TARGET_TRIPLET="$(spack arch --family)"
 
-          if [[ "${{ inputs.os }}" == "macos*" ]]; then
+          OS="${{ inputs.os }}"
+          if [[ "${OS}" == macos* ]]; then
             TARGET_TRIPLET="${TARGET_TRIPLET}-xcode${{ inputs.xcode }}"
           fi
 

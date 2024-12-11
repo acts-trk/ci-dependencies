@@ -59,7 +59,7 @@ jobs:
       - name: Download all spack.lock files
         uses: actions/download-artifact@v4
         with:
-          pattern: spack.lock-*
+          pattern: spack-*.lock
           merge-multiple: true
           path: spack-locks
 
@@ -75,24 +75,6 @@ jobs:
           path: spack-locks
           if-no-files-found: error
 
-
-      - name: Download all spack.lock files
-        uses: actions/download-artifact@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          pattern: spack-*.lock
-          merge-multiple: true
-          path: spack-locks-combined
-
-      - name: Copy lock files and commit
-        run: |
-          # Copy all lock files, overwriting existing ones
-          cp -rf spack-locks-combined/* spack-locks/
-
-          # Configure git
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-          # Add, commit and push changes
-          git add spack-locks/
-          git commit -m "Update spack lock files [skip ci]"
-          git push origin "HEAD:${GITHUB_REF#refs/heads/}"
+          commit_message: "Update spack lock files [skip ci]"

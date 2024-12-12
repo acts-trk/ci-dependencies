@@ -74,6 +74,10 @@ jobs:
       - name: Spack build
         run: |
           spack -e . install --no-check-signature
+          SPACK_VIEW="$PWD/dependencies"
+          echo "SPACK_VIEW=${SPACK_VIEW}" >> "$GITHUB_ENV"
+          spack -e . config add "view:default:root:${SPACK_VIEW}"
+          spack -e . config add "view:default:link_type:copy"
 
       - uses: mxschmitt/action-tmate@v3
         if: failure()
@@ -115,7 +119,7 @@ jobs:
 
       - name: Package output view
         run: |
-          tar cf - -C dependencies . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"$(nproc)"
+          tar cf - -C "${SPACK_VIEW}" . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"$(nproc)"
           du -sh "view_${TARGET_TRIPLET}.tar.zst"
 
       - name: Push packages and update index

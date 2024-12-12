@@ -1,5 +1,4 @@
 spack:
-  view: true
   specs:
     - boost@1.86.0 +program_options +test
     - cmake@3.30.1
@@ -32,6 +31,11 @@ spack:
     install_tree:
       padded_length: 128
     connect_timeout: 60
+
+  view:
+    default:
+      root: dependencies
+      link_type: copy
 
   mirrors:
     acts-spack-buildcache:

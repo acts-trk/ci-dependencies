@@ -123,7 +123,14 @@ jobs:
 
       - name: Package output view
         run: |
-          tar cf - -C "${SPACK_VIEW}" . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"$(nproc)"
+          OS="${{ inputs.os }}"
+          if [[ "${OS}" == macos* ]]; then
+            NCPUS=$(sysctl -n hw.ncpu)
+          else
+            NCPUS=$(nproc)
+          fi
+          echo "Detected ${NCPUS} CPUs"
+          tar cf - -C "${SPACK_VIEW}" . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"${NCPUS}"
           du -sh "view_${TARGET_TRIPLET}.tar.zst"
 
       - name: Push packages and update index

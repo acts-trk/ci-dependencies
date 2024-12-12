@@ -81,7 +81,7 @@ jobs:
           echo "SPACK_VIEW=${SPACK_VIEW}" >> "$GITHUB_ENV"
           spack -e . config add "view:default:root:${SPACK_VIEW}"
           spack -e . config add "view:default:link_type:copy"
-          spack -e . view regenerate
+          spack -e . env view regenerate
 
       - uses: mxschmitt/action-tmate@v3
         if: failure()

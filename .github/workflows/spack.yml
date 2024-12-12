@@ -74,10 +74,14 @@ jobs:
       - name: Spack build
         run: |
           spack -e . install --no-check-signature
+
+      - name: Generate spack view
+        run: |
           SPACK_VIEW="$PWD/dependencies"
           echo "SPACK_VIEW=${SPACK_VIEW}" >> "$GITHUB_ENV"
           spack -e . config add "view:default:root:${SPACK_VIEW}"
           spack -e . config add "view:default:link_type:copy"
+          spack -e . view regenerate
 
       - uses: mxschmitt/action-tmate@v3
         if: failure()

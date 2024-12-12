@@ -76,8 +76,11 @@ jobs:
           spack -e . install --no-check-signature
           SPACK_VIEW="$PWD/dependencies"
           echo "SPACK_VIEW=${SPACK_VIEW}" >> "$GITHUB_ENV"
-          spack -e . config add "view:default:root: ${SPACK_VIEW}"
-          spack -e . config add "view:default:link_type: copy"
+          spack -e . config add "view:default:root:${SPACK_VIEW}"
+          spack -e . config add "view:default:link_type:copy"
+
+      - uses: mxschmitt/action-tmate@v3
+        if: failure()
 
       - name: Derive base image for the build cache
         run: |

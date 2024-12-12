@@ -133,6 +133,14 @@ jobs:
           tar cf - -C "${SPACK_VIEW}" . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"${NCPUS}"
           du -sh "view_${TARGET_TRIPLET}.tar.zst"
 
+      - name: Add tarball to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            view_${{ env.TARGET_TRIPLET }}.tar.zst
+            spack-${{ env.TARGET_TRIPLET }}.lock
+
       - name: Push packages and update index
         if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()
         env:

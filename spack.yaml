@@ -32,11 +32,6 @@ spack:
       padded_length: 128
     connect_timeout: 60
 
-  view:
-    default:
-      root: dependencies
-      link_type: copy
-
   mirrors:
     acts-spack-buildcache:
       url: oci://ghcr.io/acts-project/spack-buildcache

@@ -74,9 +74,10 @@ jobs:
       - name: Spack build
         run: |
           spack -e . install --no-check-signature
-
-      # - uses: mxschmitt/action-tmate@v3
-      #   if: failure()
+          SPACK_VIEW="$PWD/dependencies"
+          echo "SPACK_VIEW=${SPACK_VIEW}" >> "$GITHUB_ENV"
+          spack -e . config add "view:default:root: ${SPACK_VIEW}"
+          spack -e . config add "view:default:link_type: copy"
 
       - name: Derive base image for the build cache
         run: |
@@ -112,6 +113,11 @@ jobs:
           name: spack-${{ env.TARGET_TRIPLET }}.lock
           path: spack-${{ env.TARGET_TRIPLET }}.lock
           if-no-files-found: error
+
+      - name: Package output view
+        run: |
+          tar cf - -C "${SPACK_VIEW}" . | zstd -o "view_${TARGET_TRIPLET}.tar.zst" -19 -T"$(nproc)"
+          du -sh "view_${TARGET_TRIPLET}.tar.zst"
 
       - name: Push packages and update index
         if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()

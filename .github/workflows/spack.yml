@@ -18,7 +18,7 @@ on:
         required: false
         type: string
         default: ""
-      publish:
+      default:
         required: false
         type: boolean
         default: false
@@ -108,21 +108,18 @@ jobs:
           echo "BASE IMAGE: ${BASE_IMAGE}"
           echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
-      - name: Derive target triplet
+      - name: Lockfile bookkeeping
         run: |
-          if [ "${{ inputs.compiler }}" != "" ]; then
-            echo "TARGET_TRIPLET=$(spack arch --family)_${{ inputs.compiler }}" >> "$GITHUB_ENV"
-          else
-            echo "TARGET_TRIPLET=$(spack arch --family)" >> "$GITHUB_ENV"
+          arch=$(spack arch --family)
+          echo "TARGET_TRIPLET=${arch}_${{ inputs.compiler }}" >> "$GITHUB_ENV"
+          cp spack.lock "spack_${TARGET_TRIPLET}.lock"
+          if [ "${{ inputs.default }}" != "" ]; then
+            # this will be become the default combination for this architecture
+            cp spack.lock "spack_${arch}.lock"
           fi
 
-      - name: Copy spack.lock to target-triplet
-        run: |
-          echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
-          cp spack.lock "spack_${TARGET_TRIPLET}.lock"
-
       - name: Upload lock files
-        if: inputs.publish
+        if: inputs.default
         uses: actions/upload-artifact@v4
         with:
           name: spack-${{ env.TARGET_TRIPLET }}-locks
@@ -132,7 +129,7 @@ jobs:
 
       - name: Add lock files to release
         uses: softprops/action-gh-release@v2
-        if: inputs.publish && startsWith(github.ref, 'refs/tags/')
+        if: inputs.default && startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             spack_*.lock

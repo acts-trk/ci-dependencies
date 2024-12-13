@@ -21,24 +21,24 @@ jobs:
          - os: macos-14
            xcode: "15.0.1"
            compiler: "apple-clang@15.0.0"
-           publish: false
+           default: false
 
          - os: macos-14
            xcode: "16.0.0"
            compiler: "apple-clang@16.0.0"
-           publish: true
+           default: true
 
          - os: macos-15
            xcode: "16.0.0"
            compiler: "apple-clang@16.0.0"
-           publish: true
+           default: true
 
     uses: ./.github/workflows/spack.yml
     with:
       os: ${{ matrix.os }}
       xcode: ${{ matrix.xcode }}
       compiler: ${{ matrix.compiler }}
-      publish: ${{ matrix.publish }}
+      default: ${{ matrix.default }}
     secrets: inherit
 
   build_native:
@@ -49,21 +49,21 @@ jobs:
 
          - os: ubuntu-22.04
            compiler: gcc@12.3.0
-           publish: true
+           default: true
 
          - os: ubuntu-24.04
            compiler: gcc@13.2.0
-           publish: true
+           default: true
 
          - os: ubuntu-24.04
            compiler: clang@18.1.3
-           publish: false
+           default: false
 
     uses: ./.github/workflows/spack.yml
     with:
       os: ${{ matrix.os }}
       compiler: ${{ matrix.compiler }}
-      publish: ${{ matrix.publish }}
+      default: ${{ matrix.default }}
     secrets: inherit
 
   build_container:
@@ -74,12 +74,12 @@ jobs:
         include:
           - image: ghcr.io/acts-project/alma9-base:67
             compiler: gcc@11.4.1
-            publish: true
+            default: true
 
     uses: ./.github/workflows/spack.yml
     with:
       os: ubuntu-latest
       image: ${{ matrix.image }}
       compiler: ${{ matrix.compiler }}
-      publish: ${{ matrix.publish }}
+      default: ${{ matrix.default }}
     secrets: inherit

@@ -92,7 +92,7 @@ jobs:
           echo "BASE IMAGE: ${BASE_IMAGE}"
           echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
-      - name: Copy spack.lock to target-triplet
+      - name: Derive target teiplet
         run: |
           TARGET_TRIPLET=""
           TARGET_TRIPLET="$(spack arch --family)"
@@ -103,15 +103,38 @@ jobs:
           fi
 
           echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
+
+      - name: Copy spack.lock to target-triplet
+        run: |
+          echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
           cp spack.lock "spack-${TARGET_TRIPLET}.lock"
 
+      - name: Clear spack environment and concretize geant4-data
+        run: |
+          spack -e . remove --all
+          spack -e . geant4-data@11.1.0
+          spack -e . concretize -Uf
+          spack -e . find
 
-      - name: Upload spack.lock
+      - name: Copy geant4-data spack.lock to target-triplet
+        run: |
+          echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
+          cp spack.lock "spack-${TARGET_TRIPLET}-geant4-data.lock"
+
+      - name: Upload lock files
         uses: actions/upload-artifact@v4
         with:
-          name: spack-${{ env.TARGET_TRIPLET }}.lock
-          path: spack-${{ env.TARGET_TRIPLET }}.lock
+          name: spack-${{ env.TARGET_TRIPLET }}-locks
+          path: |
+            spack-*.lock
           if-no-files-found: error
+
+      - name: Add tarball to release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            spack-*.lock
 
       - name: Push packages and update index
         if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()

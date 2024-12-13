@@ -39,6 +39,7 @@ jobs:
           curl https://patch-diff.githubusercontent.com/raw/spack/spack/pull/47370.patch | git am
 
       - run: |
+          spack compiler find
           spack compilers
 
       - name: Locate OpenGL

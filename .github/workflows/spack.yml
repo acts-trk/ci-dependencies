@@ -65,8 +65,6 @@ jobs:
           dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 25
           echo "Removing large packages"
           sudo apt-get remove -y '^dotnet-.*' || true
-          sudo apt-get remove -y '^llvm-.*' || true
-          sudo apt-get remove -y '^libllvm-.*' || true
           sudo apt-get remove -y azure-cli || true
           sudo apt-get remove -y google-cloud-cli || true
           sudo apt-get remove -y google-chrome-stable || true

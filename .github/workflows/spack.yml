@@ -112,7 +112,7 @@ jobs:
       - name: Clear spack environment and concretize geant4-data
         run: |
           spack -e . remove --all
-          spack -e . geant4-data@11.1.0
+          spack -e . add geant4-data@11.1.0
           spack -e . concretize -Uf
           spack -e . find
 

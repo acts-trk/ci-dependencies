@@ -37,6 +37,8 @@ jobs:
     with:
       os: ${{ matrix.os }}
       xcode: ${{ matrix.xcode }}
+      compiler: ${{ matrix.compiler }}
+      publish: ${{ matrix.publish }}
     secrets: inherit
 
   build_native:
@@ -60,6 +62,8 @@ jobs:
     uses: ./.github/workflows/spack.yml
     with:
       os: ${{ matrix.os }}
+      compiler: ${{ matrix.compiler }}
+      publish: ${{ matrix.publish }}
     secrets: inherit
 
   build_container:
@@ -76,4 +80,6 @@ jobs:
     with:
       os: ubuntu-latest
       image: ${{ matrix.image }}
+      compiler: ${{ matrix.compiler }}
+      publish: ${{ matrix.publish }}
     secrets: inherit

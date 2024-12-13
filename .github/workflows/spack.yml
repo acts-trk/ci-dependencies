@@ -94,15 +94,7 @@ jobs:
 
       - name: Derive target triplet
         run: |
-          TARGET_TRIPLET=""
-          TARGET_TRIPLET="$(spack arch --family)"
-
-          OS="${{ inputs.os }}"
-          if [[ "${OS}" == macos* ]]; then
-            TARGET_TRIPLET="${TARGET_TRIPLET}-xcode${{ inputs.xcode }}"
-          fi
-
-          echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
+          echo "TARGET_TRIPLET=$(spack arch --family)" >> "$GITHUB_ENV"
 
       - name: Copy spack.lock to target-triplet
         run: |

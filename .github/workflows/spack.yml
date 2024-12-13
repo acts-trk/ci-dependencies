@@ -109,6 +109,14 @@ jobs:
           echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
           cp spack.lock "spack-${TARGET_TRIPLET}.lock"
 
+      - name: Push packages and update index
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()
+        env:
+          GH_OCI_USER: "${{ github.actor }}"
+          GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          ./retry.sh spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache
+
       - name: Clear spack environment and concretize geant4-data
         run: |
           spack -e . remove --all
@@ -135,11 +143,3 @@ jobs:
         with:
           files: |
             spack-*.lock
-
-      - name: Push packages and update index
-        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && !cancelled()
-        env:
-          GH_OCI_USER: "${{ github.actor }}"
-          GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        run: |
-          ./retry.sh spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache

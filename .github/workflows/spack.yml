@@ -119,4 +119,4 @@ jobs:
           GH_OCI_USER: "${{ github.actor }}"
           GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache
+          ./retry.sh spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache

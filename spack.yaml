@@ -1,5 +1,4 @@
 spack:
-  view: true
   specs:
     - boost@1.86.0 +program_options +test
     - cmake@3.30.1

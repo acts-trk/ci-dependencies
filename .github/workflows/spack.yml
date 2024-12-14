@@ -123,7 +123,7 @@ jobs:
         if: inputs.default
         uses: actions/upload-artifact@v4
         with:
-          name: spack-${{ env.TARGET_TRIPLET }}-locks
+          name: spack_${{ env.TARGET_TRIPLET }}-locks
           path: |
             spack_*.lock
           if-no-files-found: error

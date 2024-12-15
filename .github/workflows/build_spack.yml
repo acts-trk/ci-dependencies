@@ -48,8 +48,12 @@ jobs:
         include:
 
          - os: ubuntu-22.04
-           compiler: gcc@12.3.0
+           compiler: gcc@11.4.0
            default: true
+
+         - os: ubuntu-22.04
+           compiler: clang@15.0.7
+           default: false
 
          - os: ubuntu-24.04
            compiler: gcc@13.2.0

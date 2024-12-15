@@ -52,7 +52,7 @@ jobs:
            default: true
 
          - os: ubuntu-22.04
-           compiler: clang@15.0.7
+           compiler: clang@14.0.0
            default: false
 
          - os: ubuntu-24.04

@@ -95,19 +95,6 @@ jobs:
       - uses: mxschmitt/action-tmate@v3
         if: failure()
 
-      - name: Derive base image for the build cache
-        run: |
-          if [ "${{ inputs.image }}" != "" ]; then
-            export BASE_IMAGE="${{ inputs.image }}"
-          elif [ "${{ inputs.os }}" == "ubuntu-22.04" ]; then
-            export BASE_IMAGE="ubuntu:22.04"
-          elif [ "${{ inputs.os }}" == "ubuntu-24.04" ]; then
-            export BASE_IMAGE="ubuntu:24.04"
-          else
-            export BASE_IMAGE="ubuntu:24.04"
-          fi
-          echo "BASE IMAGE: ${BASE_IMAGE}"
-          echo "BASE_IMAGE=${BASE_IMAGE}" >> "$GITHUB_ENV"
 
       - name: Lockfile bookkeeping
         run: |
@@ -141,4 +128,14 @@ jobs:
           GH_OCI_USER: "${{ github.actor }}"
           GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          ./retry.sh spack -e . buildcache push --base-image ${{ env.BASE_IMAGE }} --unsigned --update-index acts-spack-buildcache
+          if [ "${{ inputs.image }}" != "" ]; then
+            export BASE_IMAGE="${{ inputs.image }}"
+          elif [ "${{ inputs.os }}" == "ubuntu-22.04" ]; then
+            export BASE_IMAGE="ubuntu:22.04"
+          elif [ "${{ inputs.os }}" == "ubuntu-24.04" ]; then
+            export BASE_IMAGE="ubuntu:24.04"
+          else
+            export BASE_IMAGE="ubuntu:24.04"
+          fi
+          echo "BASE IMAGE: ${BASE_IMAGE}"
+          ./retry.sh spack -e . buildcache push --base-image "${BASE_IMAGE}" --unsigned --update-index acts-spack-buildcache

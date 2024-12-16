@@ -4,6 +4,7 @@ set -u
 set -e
 
 packages_file=$(spack location -r)/spack/etc/spack/packages.yaml
+echo "Packages file: $packages_file"
 
 if ! command -v sudo &> /dev/null
 then
@@ -13,6 +14,8 @@ else
 fi
 
 os=$(spack arch --platform)
+
+echo "OS: $os"
 
 if [[ "$os" == *ubuntu* ]]; then
   ${SUDO} apt-get update

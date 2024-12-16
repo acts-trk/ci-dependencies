@@ -76,11 +76,11 @@ jobs:
       matrix:
 
         include:
-          - image: ghcr.io/acts-project/alma9-base:72
+          - image: ghcr.io/acts-project/alma9-base:73
             compiler: gcc@11.5.0
             default: true
 
-          - image: ghcr.io/acts-project/ubuntu2404_clang19:72
+          - image: ghcr.io/acts-project/ubuntu2404_clang19:73
             compiler: clang@19.1.5
             default: false
 

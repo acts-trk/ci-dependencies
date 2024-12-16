@@ -77,7 +77,7 @@ jobs:
 
         include:
           - image: ghcr.io/acts-project/alma9-base:71
-            compiler: gcc@11.4.1
+            compiler: gcc@11.5.0
             default: true
 
           - image: ghcr.io/acts-project/ubuntu2404_clang19:71

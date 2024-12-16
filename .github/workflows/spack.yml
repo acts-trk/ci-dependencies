@@ -80,6 +80,7 @@ jobs:
       - name: Select compiler
         if: inputs.compiler != ''
         run: |
+          spack compilers | grep "${{ inputs.compiler }}"
           spack -e . config add 'packages:all:require: ["%${{ inputs.compiler }}"]'
 
       - name: Spack concretize

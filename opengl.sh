@@ -13,7 +13,7 @@ else
     SUDO="sudo"
 fi
 
-os=$(spack arch --platform)
+os=$(spack arch --family)
 
 echo "OS: $os"
 

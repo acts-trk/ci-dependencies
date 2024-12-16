@@ -90,7 +90,7 @@ jobs:
 
       - name: Spack build
         run: |
-          spack -e . install --no-check-signature
+          spack -e . install --no-check-signature --show-log-on-error
 
       - uses: mxschmitt/action-tmate@v3
         if: failure()

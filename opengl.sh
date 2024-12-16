@@ -5,7 +5,7 @@ set -e
 
 packages_file=$(spack location -r)/spack/etc/spack/packages.yaml
 echo "Packages file: $packages_file"
-stat "$packages_file"
+stat "$packages_file" || true
 mkdir -p $(dirname "$packages_file")
 
 if ! command -v sudo &> /dev/null

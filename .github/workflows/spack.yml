@@ -92,10 +92,6 @@ jobs:
         run: |
           spack -e . install --no-check-signature --show-log-on-error
 
-      - uses: mxschmitt/action-tmate@v3
-        if: failure()
-
-
       - name: Lockfile bookkeeping
         run: |
           arch=$(spack arch --family)
@@ -139,3 +135,6 @@ jobs:
           fi
           echo "BASE IMAGE: ${BASE_IMAGE}"
           ./retry.sh spack -e . buildcache push --base-image "${BASE_IMAGE}" --unsigned --update-index acts-spack-buildcache
+
+      # - uses: mxschmitt/action-tmate@v3
+      #   if: failure()

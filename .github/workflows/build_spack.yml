@@ -56,7 +56,7 @@ jobs:
            default: false
 
          - os: ubuntu-24.04
-           compiler: gcc@13.2.0
+           compiler: gcc@13.3.0
            default: true
 
          - os: ubuntu-24.04

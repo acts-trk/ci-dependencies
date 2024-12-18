@@ -105,6 +105,7 @@ jobs:
 
       - name: Upload lock files
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: spack_${{ env.TARGET_TRIPLET }}-locks
           path: |

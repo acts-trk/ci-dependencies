@@ -88,9 +88,6 @@ jobs:
           spack -e . concretize -Uf
           spack -e . find
 
-      - name: Spack build
-        run: |
-          spack -e . install --no-check-signature --show-log-on-error
 
       - name: Lockfile bookkeeping
         run: |
@@ -111,6 +108,10 @@ jobs:
           path: |
             spack_*.lock
           if-no-files-found: error
+
+      - name: Spack build
+        run: |
+          spack -e . install --no-check-signature --show-log-on-error
 
       - name: Add lock files to release
         uses: softprops/action-gh-release@v2

@@ -97,7 +97,7 @@ jobs:
             default: false
 
           - image: ghcr.io/acts-project/ubuntu2404_clang19:sha-cc4444b
-            compiler: clang@19.1.5
+            compiler: clang@19.1.6
             default: false
 
     uses: ./.github/workflows/spack.yml

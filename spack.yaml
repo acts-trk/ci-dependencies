@@ -9,7 +9,7 @@ spack:
     - nlohmann-json@3.11.3
     - podio@1.0.1
     - root@6.32.06 +aqua+opengl
-    - dd4hep@1.29 +xercesc
+    - dd4hep@1.29 +xercesc +edm4hep +hepmc3
     - geomodel@6.3.0 +geomodelg4
     - python@3.12
     - py-pybind11 @2.13.1

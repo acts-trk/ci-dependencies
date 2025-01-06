@@ -2,14 +2,14 @@ spack:
   specs:
     - boost@1.86.0 +program_options +test +json
     - cmake@3.30.1
-    - edm4hep@0.10.5
+    - edm4hep@0.99.1
     - eigen@3.4.0
     - git-lfs@3.5.1
     - intel-tbb@2021.12.0
     - nlohmann-json@3.11.3
-    - podio@1.0.1
+    - podio@1.1
     - root@6.32.06 +aqua+opengl
-    - dd4hep@1.29 +xercesc +edm4hep +hepmc3
+    - dd4hep@1.30 +xercesc +edm4hep +hepmc3
     - geomodel@6.3.0 +geomodelg4
     - python@3.12
     - py-pybind11 @2.13.1
@@ -42,3 +42,17 @@ spack:
       access_pair:
         id_variable: GH_OCI_USER
         secret_variable: GH_OCI_TOKEN
+  compilers:
+  - compiler:
+      spec: apple-clang@=16.0.0
+      paths:
+        cc: /usr/bin/clang
+        cxx: /usr/bin/clang++
+        f77: null
+        fc: null
+      flags: {}
+      operating_system: sequoia
+      target: aarch64
+      modules: []
+      environment: {}
+      extra_rpaths: []

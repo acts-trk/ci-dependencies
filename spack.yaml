@@ -28,7 +28,7 @@ spack:
       variants: cxxstd=20 build_type=Release
 
   concretizer:
-    unify: when_possible
+    unify: true
 
   config:
     install_tree:

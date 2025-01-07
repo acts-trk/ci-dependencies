@@ -95,7 +95,7 @@ jobs:
           export TARGET_TRIPLET="${arch}_${{ inputs.compiler }}"
           echo "TARGET_TRIPLET=${TARGET_TRIPLET}" >> "$GITHUB_ENV"
           cp spack.lock "spack_${TARGET_TRIPLET}.lock"
-          if [ "${{ inputs.default }}" != "" ]; then
+          if [ "${{ inputs.default }}" == "true" ]; then
             # this will be become the default combination for this architecture
             cp spack.lock "spack_${arch}.lock"
           fi

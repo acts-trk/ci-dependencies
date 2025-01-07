@@ -90,6 +90,7 @@ jobs:
 
 
       - name: Lockfile bookkeeping
+        shell: bash
         run: |
           arch=$(spack arch --family)
           export TARGET_TRIPLET="${arch}_${{ inputs.compiler }}"
@@ -125,6 +126,7 @@ jobs:
         env:
           GH_OCI_USER: "${{ github.actor }}"
           GH_OCI_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        shell: bash
         run: |
           if [[ "${{ inputs.image }}" != "" ]]; then
             export BASE_IMAGE="${{ inputs.image }}"

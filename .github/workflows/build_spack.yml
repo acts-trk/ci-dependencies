@@ -24,12 +24,12 @@ jobs:
            default: false
 
          - os: macos-14
-           xcode: "16.0.0"
+           xcode: "16.2.0"
            compiler: "apple-clang@16.0.0"
            default: true
 
          - os: macos-15
-           xcode: "16.0.0"
+           xcode: "16.2.0"
            compiler: "apple-clang@16.0.0"
            default: true
 
